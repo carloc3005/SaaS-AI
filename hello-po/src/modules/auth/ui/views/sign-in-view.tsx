@@ -90,7 +90,7 @@ export const SignInView = () => {
                                             Login to your account
                                         </p>
                                     </div>
-                                    <div className="grid gap-3">
+                                    <div className="grid gap-4">
                                         <FormField
                                             control={form.control}
                                             name="email"
@@ -104,8 +104,6 @@ export const SignInView = () => {
                                                 </FormItem>
                                             )}
                                         />
-                                    </div>
-                                    <div className="grid gap-3">
                                         <FormField
                                             control={form.control}
                                             name="password"
@@ -129,12 +127,10 @@ export const SignInView = () => {
                                     <Button disabled={pending} type="submit" className="w-full">
                                         Sign In
                                     </Button>
-                                    <div className="after: border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center
-                                after:border-t">
-                                        <span className="bg-card text-muted-foreground relative z-10 px-2">
+                                    <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
+                                        <span className="relative z-10 bg-background px-2 text-muted-foreground">
                                             or
                                         </span>
-
                                     </div>
                                     <div className="grid grid-cols-4 gap-4">
                                         <Button disabled={pending} onClick={() => onSocial("google")}
@@ -169,9 +165,15 @@ export const SignInView = () => {
                     </CardContent>
                 </Card>
 
-                <div className="text-muted-foreground *:[a]:hover:text-primary w-full max-w-sm text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4 md:max-w-3xl">
-                    By clicking continue, you agree to our <a href="#">Terms of Service</a> and{" "}
-                    <a href="#">Privacy Policy</a>
+                <div className="w-full max-w-sm text-center text-xs text-balance text-muted-foreground md:max-w-3xl">
+                    By clicking continue, you agree to our{" "}
+                    <Link href="/terms" className="underline underline-offset-4 hover:text-primary">
+                        Terms of Service
+                    </Link>{" "}
+                    and{" "}
+                    <Link href="/privacy" className="underline underline-offset-4 hover:text-primary">
+                        Privacy Policy
+                    </Link>
                 </div>
             </div>
         );
