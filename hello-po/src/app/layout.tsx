@@ -1,4 +1,5 @@
 import "./globals.css";
+import { TRPCReactProvider } from "@/trpc/client";
 
 export const metadata = {
   title: 'My Next.js App',
@@ -11,8 +12,11 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body>{children}</body>
-    </html>
+    <TRPCReactProvider>
+      <html lang="en" suppressHydrationWarning>
+        <body>{children}</body>
+      </html>
+    </TRPCReactProvider>
+
   )
 }
