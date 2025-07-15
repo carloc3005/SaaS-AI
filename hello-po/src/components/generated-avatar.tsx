@@ -16,25 +16,29 @@ export const GeneratedAvatar = ({
     className,
     variant
 } : GeneratedAvatarProps ) => {
+    // Ensure we have a valid seed
+    const validSeed = seed || "User";
     let avatar;
 
     if (variant === "botttsNeutral") {
         avatar = createAvatar(botttsNeutral, {
-            seed,
+            seed: validSeed,
         })
     } else {
         avatar = createAvatar(initials, {
-            seed,
+            seed: validSeed,
             fontWeight: 500, 
             fontSize: 42,
+            textColor: ["000000"], 
+            backgroundColor: ["ffffff"], 
         });
     }
 
     return (
-        <Avatar className="cn(className)">
+        <Avatar className={cn(className)}>
             <AvatarImage src={avatar.toDataUri()} alt="Avatar"/>
-            <AvatarFallback>
-                {seed.charAt(0).toUpperCase()}
+            <AvatarFallback className="text-black bg-white">
+                {validSeed.charAt(0).toUpperCase()}
             </AvatarFallback>
         </Avatar>
     )
