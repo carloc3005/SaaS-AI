@@ -14,6 +14,11 @@ import { DashboardUserButton } from "./dashboard-user-button";
 
 const firstSection = [
     {
+        icon: BotIcon,
+        label: "Agents",
+        href: "/agents",
+    },
+    {
         icon: VideoIcon,
         label: "Meetings",
         href: "/meetings",
