@@ -2,5 +2,5 @@ import { z } from "zod";
 
 export const agentsInsertedSchema = z.object({
     name: z.string().min(1, {message: "Name is required"}),
-    instructions: z.string().min(1, {message: "Name is required"}),
+    instructions: z.string().min(1, {message: "Instruction are required"}),
 })

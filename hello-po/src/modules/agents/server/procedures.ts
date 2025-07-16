@@ -8,7 +8,7 @@ import { z } from "zod";
 export const agentsRouter = createTRPCRouter({
     // TODO: change 'getMany' to use protectedProcedure 
 
-    getOne: baseProcedure.input(z.object({id: z.string() })).query(async ({ input }) => {
+    getOne: protectedProcedure.input(z.object({id: z.string() })).query(async ({ input }) => {
         const [existing] = await db
             .select()
             .from(agents)
@@ -19,7 +19,7 @@ export const agentsRouter = createTRPCRouter({
 
     // TODO: change 'getMany' to use protectedProcedure 
 
-    getMany: baseProcedure.query(async () => {
+    getMany: protectedProcedure.query(async () => {
         const data = await db
             .select()
             .from(agents);

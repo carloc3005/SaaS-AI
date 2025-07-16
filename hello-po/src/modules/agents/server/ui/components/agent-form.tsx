@@ -1,6 +1,5 @@
 import { useTRPC } from "@/trpc/client";
 import { AgentGetOne } from "../../types";
-import { useRouter } from "next/router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -12,6 +11,7 @@ import { GeneratedAvatar } from "@/components/generated-avatar";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 interface AgentFormProps {
     onSucess?: () => void;
@@ -26,13 +26,29 @@ export const AgentForm = ({
     initialValues,
 }: AgentFormProps) => {
     const trpc = useTRPC();
-    const router = useRouter();
     const queryClient = useQueryClient();
 
     const createAgent = useMutation(
         trpc.agents.create.mutationOptions({
-            onSuccess: () => { },
-            onError: () => { },
+            onSuccess: () => { 
+                queryClient.invalidateQueries(
+                    trpc.agents.getMany.queryOptions(),
+                );
+
+                
+                if( initialValues?.id) {
+                    queryClient.invalidateQueries(
+                        trpc.agents.getOne.queryOptions({ id: initialValues.id}),
+                    )
+                }
+
+                onSucess?.();
+             },
+            onError: ( error ) => { 
+                toast.error(error.message);
+
+                // TODO: Check if error code is "FORBIDDEN", redirect to "/upgrade"
+             },
         })
     );
 
@@ -66,6 +82,7 @@ export const AgentForm = ({
                         <FormControl>
                             <Input {...field} placeholder="e.g. Math Tutor" />
                         </FormControl>
+                        <FormControl />
                     </FormItem>
                 )} />
 
@@ -75,8 +92,19 @@ export const AgentForm = ({
                         <FormControl>
                             <Textarea {...field} placeholder="You are a helpful math assistant that can answer questions and help with assignments" />
                         </FormControl>
+                        <FormMessage />
                     </FormItem>
                 )} />
+                <div className="flex justify-between gap-x-2">
+                    {onCancel && (
+                        <Button variant="ghost" disabled={isPending} type="button" onClick={() => onCancel()}>
+                            Cancel
+                        </Button>
+                    )}
+                    <Button disabled={isPending} type="submit">
+                        {isEdit ? "Update" : "Create"}
+                    </Button>
+                </div>
             </form>
         </Form>
     )
