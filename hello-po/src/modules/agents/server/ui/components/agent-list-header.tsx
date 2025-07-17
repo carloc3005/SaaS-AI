@@ -4,8 +4,11 @@ import { Button } from "@/components/ui/button"
 import { PlusIcon } from "lucide-react"
 import { NewAgentDialog } from "./new-agent-dialog"
 import { useState } from "react"
+import { useAgentsFilter } from "@/modules/agents/hooks/use-agents-filters"
+import { AgentSearchFilter } from "./agents-search-filter"
 
 export const AgentListHeader = () => {
+    const [filters, setFilters] = useAgentsFilter();
     const [isDialogOpen, setIsDialogOpen] = useState(false);
 
     return (
@@ -20,6 +23,9 @@ export const AgentListHeader = () => {
                         <PlusIcon />
                         New Agent
                     </Button>
+                </div>
+                <div className="flex items-center gap-x-2 p-1 ">
+                    <AgentSearchFilter />
                 </div>
             </div>
         </>

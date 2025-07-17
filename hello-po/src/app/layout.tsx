@@ -15,10 +15,11 @@ export default function RootLayout({
   return (
     <TRPCReactProvider>
       <html lang="en" suppressHydrationWarning>
-        <body>{children}</body>
-        <Toaster />
+        <body>
+          {children}
+          <Toaster />
+        </body>
       </html>
     </TRPCReactProvider>
-
   )
 }

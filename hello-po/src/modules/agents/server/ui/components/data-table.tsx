@@ -12,6 +12,7 @@ import {
   TableBody,
   TableCell,
   TableHead,
+  TableHeader,
   TableRow,
 } from "@/components/ui/table"
 
@@ -35,7 +36,7 @@ export function DataTable<TData, TValue>({
   return (
     <div className="rounded-lg border bg-background overflow-hidden">
       <Table>
-        <TableHead>
+        <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
               {headerGroup.headers.map((header) => {
@@ -52,7 +53,7 @@ export function DataTable<TData, TValue>({
               })}
             </TableRow>
           ))}
-        </TableHead>
+        </TableHeader>
         <TableBody>
           {table.getRowModel().rows?.length ? (
             table.getRowModel().rows.map((row) => (
