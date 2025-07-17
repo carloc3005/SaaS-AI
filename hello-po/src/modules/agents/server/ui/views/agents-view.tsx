@@ -8,7 +8,8 @@ import { columns } from "../components/columns";
 import { EmptyState } from "@/components/empty-state";
 import { useAgentsFilter } from "@/modules/agents/hooks/use-agents-filters";
 import { DataPagination } from "../components/data-pagination";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
+import { LoadingState } from "@/components/loading-state";
 
 
 
@@ -32,6 +33,12 @@ export const AgentsView = () => {
         </div>
     );
 };
+
+export const AgentsViewLoading = () => {
+    return (
+        <LoadingState title="Loading Agents" description="This may take a few seconds" />
+    );
+}
 
 export const AgentsViewError = () => {
     return (
