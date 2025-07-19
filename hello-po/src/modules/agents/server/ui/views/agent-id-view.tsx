@@ -11,6 +11,8 @@ import { VideoIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useConfirm } from "@/modules/agents/hooks/use-confirm";
+import { useState } from "react";
+import { UpdateAgentDialog } from "../components/update-agent-dialog";
 
 interface Props {
     agentId: string;
@@ -20,6 +22,8 @@ export const AgentIdView = ({ agentId }: Props) => {
     const router = useRouter();
     const queryClient = useQueryClient();
     const trpc = useTRPC();
+
+    const [updateAgentDialogOpen, SetUpdateAgenDialogOpen] = useState(false);
 
     const { data } = useSuspenseQuery(trpc.agents.getOne.queryOptions({ id: agentId }));
 
@@ -51,8 +55,9 @@ export const AgentIdView = ({ agentId }: Props) => {
     return (
         <>
             <RemoveConfirmation />
+            <UpdateAgentDialog open={updateAgentDialogOpen} onOpenChange={SetUpdateAgenDialogOpen} initialValues={data}/>
             <div className="flex-1 py-4 px-4 md:px-8 flex flex-col gap-y-4">
-                <AgentIdViewHeader agentId={agentId} agentName={data.name} onEdit={() => { }} onRemove={handleRemoveAgent} />
+                <AgentIdViewHeader agentId={agentId} agentName={data.name} onEdit={() => SetUpdateAgenDialogOpen(true)} onRemove={handleRemoveAgent} />
                 <div className="bg-white rounded-lg border">
                     <div className="px-4 py-5 gap-y-5 flex flex-col col-span-5">
                         <div className="flex items-center gap-x-3">

@@ -8,7 +8,7 @@ interface UpdateAgentDialogProps {
     initialValues: AgentGetOne;
 }
 
-export const NewAgentDialog = ({
+export const UpdateAgentDialog = ({
     open, 
     onOpenChange,
     initialValues,
