@@ -1,6 +1,8 @@
 import { pgTable, text, timestamp, boolean, pgEnum } from "drizzle-orm/pg-core";
 import { nanoid } from "nanoid";
 
+// Define enums first
+export const meetingStatus = pgEnum("meeting_status", ["upcoming", "active", "completed", "processing", "cancelled"]);
 
 export const user = pgTable("user", {
   id: text('id').primaryKey(),
@@ -60,9 +62,6 @@ export const agents = pgTable("agents", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
-
-const meetingStatus = pgEnum("meeting_status", ["upcoming", "active", "completed", "processing", "cancelled"]);
-
 
 export const meetings = pgTable("meetings", {
   id: text("id")

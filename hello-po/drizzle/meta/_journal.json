@@ -22,6 +22,20 @@
       "when": 1752900398275,
       "tag": "0002_fuzzy_omega_flight",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1754370757287,
+      "tag": "0003_fearless_gravity",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1754370795011,
+      "tag": "0004_happy_kid_colt",
+      "breakpoints": true
     }
   ]
 }
