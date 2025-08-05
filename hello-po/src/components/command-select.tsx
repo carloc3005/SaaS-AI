@@ -37,6 +37,11 @@ export const CommandSelect = ({
     const [open, setOpen] = useState(false);
     const [search, setSearch] = useState("");
 
+    const handleOpenChange = (open: boolean) => {
+        setSearch("");
+        setOpen(open);
+    };
+
     // Use React Query for search when queryOptions is provided
     const { data: searchResults, isLoading } = useQuery({
         ...queryOptions?.(search),
@@ -64,7 +69,7 @@ export const CommandSelect = ({
                 </div>
                 <ChevronsUpDownIcon />
             </Button>
-            <CommandResponsiveDialog open={open} onOpenChange={setOpen} shouldFilter={false}>
+            <CommandResponsiveDialog open={open} onOpenChange={handleOpenChange} shouldFilter={false}>
                 <CommandInput placeholder="Search..." onValueChange={setSearch}/>
                 <CommandList>
                     <CommandEmpty>

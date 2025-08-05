@@ -5,6 +5,7 @@ import { and, count, desc, eq, getTableColumns, ilike, sql } from "drizzle-orm";
 import { z } from "zod";
 import { DEFAULT_PAGE, MAX_PAGE_SIZE, MIN_PAGE_SIZE } from "@/constants";
 import { TRPCError } from "@trpc/server";
+import { MeetingStatus } from "../ui/views/types";
 
 // Meeting schemas
 const meetingCreateSchema = z.object({
@@ -46,9 +47,18 @@ export const meetingsRouter = createTRPCRouter({
                 .default(DEFAULT_PAGE),
             search: z.string().nullish(),
             agentId: z.string().optional(),
+            status: z 
+                .enum([
+                    MeetingStatus.Upcoming,
+                    MeetingStatus.Active,
+                    MeetingStatus.Cancelled,
+                    MeetingStatus.Processing,
+                    MeetingStatus.Completed,
+                ])
+                .nullish(),
         }))
         .query(async ({ input, ctx }) => {
-            const { search, page, pageSize, agentId } = input;
+            const { search, page, pageSize, agentId, status } = input;
 
             const data = await db
                 .select({
@@ -63,6 +73,7 @@ export const meetingsRouter = createTRPCRouter({
                         eq(meetings.userId, ctx.auth.user.id),
                         agentId ? eq(meetings.agentId, agentId) : undefined,
                         search ? ilike(meetings.name, `%${search}%`) : undefined,
+                        status ? eq(meetings.status, status) : undefined,
                     )
                 )
                 .orderBy(desc(meetings.createdAt), desc(meetings.id))
@@ -78,6 +89,7 @@ export const meetingsRouter = createTRPCRouter({
                         eq(meetings.userId, ctx.auth.user.id),
                         agentId ? eq(meetings.agentId, agentId) : undefined,
                         search ? ilike(meetings.name, `%${search}%`) : undefined,
+                        status ? eq(meetings.status, status) : undefined,
                     )
                 );
 
