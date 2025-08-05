@@ -12,6 +12,7 @@ import { meetingsInsertedSchema } from "../views/schemas";
 import { MeetingGetOne } from "../views/types";
 import { CommandSelect } from "@/components/command-select";
 import { GeneratedAvatar } from "@/components/generated-avatar";
+import { NewAgentDialog } from "@/modules/agents/server/ui/components/new-agent-dialog";
 import { useState } from "react";
 
 // Meeting schemas - using the imported schema
@@ -30,19 +31,7 @@ export const MeetingForm = ({
 }: MeetingFormProps) => {
     const trpc = useTRPC();
     const queryClient = useQueryClient();
-
-    // Agent search state
-    const [agentSearch, setAgentSearch] = useState("");
-    const pageSize = 100;
-
-    // Query to fetch agents with search
-    const { data: agentsData } = useQuery(
-        trpc.agents.getMany.queryOptions({
-            search: agentSearch,
-            pageSize: pageSize,
-            page: 1,
-        })
-    );
+    const [openNewAgentDialog, setOpenNewAgentDialog] = useState(false);
 
     const createMeeting = useMutation(
         trpc.meetings.create.mutationOptions({
@@ -109,56 +98,93 @@ export const MeetingForm = ({
     };
 
     return (
-        <Form {...form}>
-            <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
-                
-                <FormField name="name" control={form.control} render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Meeting Name</FormLabel>
-                        <FormControl>
-                            <Input {...field} placeholder="e.g. Weekly Team Meeting" />
-                        </FormControl>
-                        <FormMessage />
-                    </FormItem>
-                )} />
+        <>
+            <NewAgentDialog 
+                open={openNewAgentDialog} 
+                onOpenChange={(open) => {
+                    setOpenNewAgentDialog(open);
+                    // When dialog closes after successful creation, 
+                    // the query will be invalidated and agents list will refresh
+                }} 
+            />
+            <Form {...form}>
+                <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
+                    
+                    <FormField name="name" control={form.control} render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Meeting Name</FormLabel>
+                            <FormControl>
+                                <Input {...field} placeholder="e.g. Weekly Team Meeting" />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )} />
 
-                <FormField name="agentId" control={form.control} render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Agent</FormLabel>
-                        <FormControl>
-                            <CommandSelect
-                                options={
-                                    agentsData?.items?.map((agent) => ({
-                                        id: agent.id,
-                                        value: agent.id,
-                                        children: (
-                                            <div className="flex items-center gap-x-2">
-                                                <GeneratedAvatar variant="botttsNeutral" seed={agent.name} className="size-5" />
-                                                <span>{agent.name}</span>
-                                            </div>
-                                        ),
-                                    })) ?? []
-                                }
-                                onSelect={field.onChange}
-                                onSearch={setAgentSearch}
-                                value={field.value}
-                                placeholder="Select an agent for this meeting"
-                            />
-                        </FormControl>
-                        <FormMessage />
-                    </FormItem>
-                )} />
-                <div className="flex justify-end gap-x-2 pt-4">
-                    {onCancel && (
-                        <Button variant="ghost" disabled={isPending} type="button" onClick={() => onCancel()}>
-                            Cancel
+                    <FormField name="agentId" control={form.control} render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Agent</FormLabel>
+                            <FormControl>
+                                <CommandSelect
+                                    queryOptions={(search) => 
+                                        trpc.agents.getMany.queryOptions({
+                                            search: search,
+                                            pageSize: 100,
+                                            page: 1,
+                                        })
+                                    }
+                                    mapResults={(data) => {
+                                        const agentOptions = data?.items?.map((agent: any) => ({
+                                            id: agent.id,
+                                            value: agent.id,
+                                            children: (
+                                                <div className="flex items-center gap-x-2">
+                                                    <GeneratedAvatar variant="botttsNeutral" seed={agent.name} className="size-5" />
+                                                    <span>{agent.name}</span>
+                                                </div>
+                                            ),
+                                        })) ?? [];
+                                        
+                                        // Always add "Create New Agent" option at the end
+                                        return [
+                                            ...agentOptions,
+                                            {
+                                                id: 'create-new',
+                                                value: 'create-new',
+                                                children: (
+                                                    <div className="flex items-center gap-x-2 text-primary border-t pt-2 mt-2">
+                                                        <span className="text-lg">+</span>
+                                                        <span>Create New Agent</span>
+                                                    </div>
+                                                ),
+                                            }
+                                        ];
+                                    }}
+                                    onSelect={(value) => {
+                                        if (value === 'create-new') {
+                                            setOpenNewAgentDialog(true);
+                                        } else {
+                                            field.onChange(value);
+                                        }
+                                    }}
+                                    value={field.value}
+                                    placeholder="Select an agent for this meeting"
+                                />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )} />
+                    <div className="flex justify-end gap-x-2 pt-4">
+                        {onCancel && (
+                            <Button variant="ghost" disabled={isPending} type="button" onClick={() => onCancel()}>
+                                Cancel
+                            </Button>
+                        )}
+                        <Button disabled={isPending} type="submit">
+                            {isPending ? "Saving..." : isEdit ? "Update" : "Create"}
                         </Button>
-                    )}
-                    <Button disabled={isPending} type="submit">
-                        {isPending ? "Saving..." : isEdit ? "Update" : "Create"}
-                    </Button>
-                </div>
-            </form>
-        </Form>
+                    </div>
+                </form>
+            </Form>
+        </>
     )
 }
