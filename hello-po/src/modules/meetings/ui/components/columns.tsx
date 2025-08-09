@@ -2,7 +2,7 @@
 
 import { ColumnDef } from "@tanstack/react-table"
 import { GeneratedAvatar } from "@/components/generated-avatar"
-import { CornerRightDownIcon, VideoIcon } from "lucide-react"
+import { CornerRightDownIcon, VideoIcon, MoreVerticalIcon, PencilIcon, TrashIcon } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { format } from "date-fns"
 import humanizeDuration from "humanize-duration"
@@ -10,6 +10,19 @@ import { CircleCheckIcon, CircleXIcon, ClockArrowUpIcon, ClockFadingIcon, Corner
 import { MeetingsGetMany } from "../views/types"
 import { cn } from "@/lib/utils"
 import { useRouter } from "next/navigation"
+import { Button } from "@/components/ui/button"
+import {
+    DropdownMenu,
+    DropdownMenuTrigger,
+    DropdownMenuItem,
+    DropdownMenuContent,
+} from "@/components/ui/dropdown-menu"
+import { useState } from "react"
+import { UpdateMeetingDialog } from "./update-meeting-dialog"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useTRPC } from "@/trpc/client"
+import { useConfirm } from "@/modules/agents/hooks/use-confirm"
+import { toast } from "sonner"
 
 function formatDuration(seconds: number) {
     return humanizeDuration(seconds * 1000, {
@@ -36,6 +49,78 @@ const statusColorMap = {
 }
 
 type Meeting = MeetingsGetMany[number];
+
+// Actions Cell Component
+const ActionsCell = ({ meeting }: { meeting: Meeting }) => {
+    const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
+    const trpc = useTRPC();
+    const queryClient = useQueryClient();
+    const router = useRouter();
+
+    const [RemoveConfirmation, confirmRemove] = useConfirm(
+        "Are you sure?",
+        "The following action will remove this meeting"
+    );
+
+    const removeMeeting = useMutation(
+        trpc.meetings.remove.mutationOptions({
+            onSuccess: () => {
+                queryClient.invalidateQueries(trpc.meetings.getMany.queryOptions({}));
+                toast.success("Meeting deleted successfully");
+            },
+            onError: (error) => {
+                toast.error(error.message);
+            }
+        })
+    );
+
+    const handleEdit = (e: React.MouseEvent) => {
+        e.stopPropagation(); // Prevent row click
+        setUpdateDialogOpen(true);
+    };
+
+    const handleDelete = async (e: React.MouseEvent) => {
+        e.stopPropagation(); // Prevent row click
+        const ok = await confirmRemove();
+        if (!ok) return;
+        await removeMeeting.mutateAsync({ id: meeting.id });
+    };
+
+    return (
+        <>
+            <RemoveConfirmation />
+            <UpdateMeetingDialog 
+                open={updateDialogOpen} 
+                onOpenChange={setUpdateDialogOpen} 
+                initialValues={{
+                    ...meeting,
+                    agent: meeting.agents // Map agents to agent for UpdateMeetingDialog
+                }}
+            />
+            <DropdownMenu modal={false}>
+                <DropdownMenuTrigger asChild>
+                    <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={(e) => e.stopPropagation()} // Prevent row click
+                    >
+                        <MoreVerticalIcon className="size-4" />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={handleEdit}>
+                        <PencilIcon className="size-4 text-black" />
+                        Edit
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleDelete}>
+                        <TrashIcon className="size-4 text-black" />
+                        Delete
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
+        </>
+    );
+};
 
 export const columns: ColumnDef<MeetingsGetMany[number]>[] = [
     {
@@ -87,5 +172,10 @@ export const columns: ColumnDef<MeetingsGetMany[number]>[] = [
                 <ClockFadingIcon className="text-blue-700"/>{row.original.duration ? formatDuration(row.original.duration) : "No duration"}
            </Badge>
         )
+    },
+    {
+        id: "actions",
+        header: "Actions",
+        cell: ({ row }) => <ActionsCell meeting={row.original} />
     }
 ]
