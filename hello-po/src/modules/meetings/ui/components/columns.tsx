@@ -9,6 +9,7 @@ import humanizeDuration from "humanize-duration"
 import { CircleCheckIcon, CircleXIcon, ClockArrowUpIcon, ClockFadingIcon, CornerDownRightIcon, LoaderIcon } from "lucide-react"
 import { MeetingsGetMany } from "../views/types"
 import { cn } from "@/lib/utils"
+import { useRouter } from "next/navigation"
 
 function formatDuration(seconds: number) {
     return humanizeDuration(seconds * 1000, {
@@ -46,9 +47,15 @@ export const columns: ColumnDef<MeetingsGetMany[number]>[] = [
                 <div className="flex items-center gap-x-2">
                     <div className="size-3 text-muted-foreground">
                         <CornerRightDownIcon className="size-3 text-muted-foreground" />
-                        <span className="text-sm text-muted-foreground max-w-[200px] truncate capitalize">
+                        <button 
+                            className="text-sm text-muted-foreground max-w-[200px] truncate capitalize hover:text-blue-600 hover:underline cursor-pointer"
+                            onClick={(e) => {
+                                e.stopPropagation(); // Prevent row click
+                                window.location.href = `/meetings/${row.original.id}`;
+                            }}
+                        >
                             {row.original.agents.name}
-                        </span>
+                        </button>
                     </div>
                 </div>
                 <GeneratedAvatar variant="botttsNeutral" seed={row.original.agents.name} className="size-4" />

@@ -28,9 +28,8 @@ const Page = async ({ searchParams }: Props) => {
 
     const queryClient = getQueryClient();
 
-    void queryClient.prefetchQuery(trpc.agents.getMany.queryOptions({
-        ...params,
-    }));
+    // Removed server-side prefetch to avoid authentication issues
+    // The query will be handled client-side in AgentsView
 
     return (
         <>

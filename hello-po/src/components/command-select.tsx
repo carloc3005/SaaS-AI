@@ -43,10 +43,13 @@ export const CommandSelect = ({
     };
 
     // Use React Query for search when queryOptions is provided
+    const queryOptionsForSearch = queryOptions && open ? queryOptions(search) : null;
     const { data: searchResults, isLoading } = useQuery({
-        ...queryOptions?.(search),
-        enabled: open && !!queryOptions, // Only run query when dialog is open and queryOptions provided
-        staleTime: 30000, // Consider data fresh for 30 seconds
+        queryKey: ['command-select-fallback'],
+        queryFn: () => Promise.resolve(null),
+        staleTime: 30000,
+        ...queryOptionsForSearch,
+        enabled: open && !!queryOptions && !!queryOptionsForSearch?.queryFn,
     });
 
     // Process search results using mapResults function if provided
