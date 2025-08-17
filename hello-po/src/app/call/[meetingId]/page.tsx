@@ -11,7 +11,7 @@ interface Props {
 	}>;
 };
 
-export const Page = async ({ params }: Props) => {
+export default async function Page({ params }: Props) {
 	const { meetingId } = await params;
 
 	const session = await auth.api.getSession({
