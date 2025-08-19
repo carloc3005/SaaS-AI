@@ -13,6 +13,7 @@ import {
 } from "@stream-io/video-react-sdk"
 
 import "@stream-io/video-react-sdk/css/styles.css"
+import { CallUI } from "./call-ui";
 
 interface Props {
 	meetingId: string;
@@ -44,12 +45,48 @@ export const CallConnect = ({
 				image: userImage,
 			},
 			tokenProvider: generateToken
-		})
-	}, []);
+		});
+
+		setClient(_client);
+
+		return () => {
+			_client.disconnectUser();
+			setClient(undefined);
+		};
+	}, [userId, userName, userImage, generateToken]);
+
+	const [call, setCall] = useState<Call>();
+
+	useEffect(() => {
+		if(!client) return;
+
+		const _call = client.call("default", meetingId);
+		_call.camera.disable();
+		_call.microphone.disable();
+		setCall(_call);
+
+		return () => {
+			if (_call.state.callingState !== CallingState.LEFT) {
+				_call.leave();
+				_call.endCall();
+				setCall(undefined);
+			}
+		};
+	}, [client, meetingId]);
+
+	if (!client || !call ) {
+		return (
+			<div className="flex h-screen items-center justify-center bg-radial from-sidebar-accent-to-sidebar">
+				<LoaderIcon className="size-6 animate-spin text-white" />
+			</div>
+		);
+	}
 
 	return (
-		<div>
-			Call Connect
-		</div>
-	)
-}
+		<StreamVideo client={client}>
+			<StreamCall call={call}>
+				<CallUI meetingName={meetingName}/>
+			</StreamCall>
+		</StreamVideo>
+	);
+};
