@@ -12,7 +12,7 @@ import {
 	StreamVideoClient,
 } from "@stream-io/video-react-sdk"
 
-import "@stream-io/video-react-sdk/css/styles.css"
+import "@stream-io/video-react-sdk/dist/css/styles.css"
 import { CallUI } from "./call-ui";
 
 interface Props {

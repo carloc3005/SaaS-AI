@@ -23,7 +23,13 @@ export const MeetingsView = () => {
     return (
         <div className="flex-1 pb-4 px-4 md:px-8 flex flex-col gap-y-4">
             <DataTable data={data.items} columns={columns} onRowClick={(row) => router.push(`/meetings/${row.id}`)}/>
-            <DataPagination page={filters.page} totalPages={data.totalPages} onPageChange={(page) => setFilters({ page })}/>
+            <DataPagination 
+                page={filters.page} 
+                totalPages={data.totalPages} 
+                total={data.total}
+                pageSize={filters.pageSize}
+                onPageChange={(page) => setFilters({ page })}
+            />
             {data.items.length === 0 && (
                 <EmptyState title="No meetings scheduled yet" description="Start collaborating by creating your first meeting. Invite team members, set agendas, and track your progress all in one place." />
             )}

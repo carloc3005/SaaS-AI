@@ -3,7 +3,7 @@ import { db } from "@/db";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { and, count, desc, eq, getTableColumns, ilike, sql } from "drizzle-orm";
 import { z } from "zod";
-import { DEFAULT_PAGE, MAX_PAGE_SIZE, MIN_PAGE_SIZE } from "@/constants";
+import { DEFAULT_PAGE, DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE, MIN_PAGE_SIZE } from "@/constants";
 import { TRPCError } from "@trpc/server";
 import { MeetingStatus } from "../ui/views/types";
 import { streamVideo } from "@/lib/stream-video";
@@ -115,7 +115,7 @@ export const meetingsRouter = createTRPCRouter({
                 .number()
                 .min(MIN_PAGE_SIZE)
                 .max(MAX_PAGE_SIZE)
-                .default(DEFAULT_PAGE),
+                .default(DEFAULT_PAGE_SIZE),
             search: z.string().nullish(),
             agentId: z.string().optional(),
             status: z 

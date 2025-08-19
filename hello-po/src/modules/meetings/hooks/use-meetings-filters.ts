@@ -1,4 +1,4 @@
-import { DEFAULT_PAGE } from "@/constants";
+import { DEFAULT_PAGE, DEFAULT_PAGE_SIZE } from "@/constants";
 import { parseAsInteger, parseAsString, useQueryStates, parseAsStringEnum  } from "nuqs";
 
 import {MeetingStatus } from "../ui/views/types";
@@ -7,6 +7,7 @@ export const useMeetingsFilter = () => {
     return useQueryStates({
         search: parseAsString.withDefault("").withOptions({ clearOnDefault: true}),
         page: parseAsInteger.withDefault(DEFAULT_PAGE).withOptions({ clearOnDefault: true}),
+        pageSize: parseAsInteger.withDefault(DEFAULT_PAGE_SIZE).withOptions({ clearOnDefault: true}),
         status: parseAsStringEnum(Object.values(MeetingStatus)),
         agentId: parseAsString.withDefault("").withOptions({ clearOnDefault: true}),
     })
