@@ -7,7 +7,7 @@ import {
  } from "@stream-io/video-react-sdk";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import "@stream-io/video-react-sdk/css/styles.css";
+import "@stream-io/video-react-sdk/dist/css/styles.css";
 
 interface Props {
     onJoin: () => void;
