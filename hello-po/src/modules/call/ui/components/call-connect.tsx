@@ -63,6 +63,14 @@ export const CallConnect = ({
 		const _call = client.call("default", meetingId);
 		_call.camera.disable();
 		_call.microphone.disable();
+		
+		// Set the meeting metadata for webhook identification
+		_call.update({
+			custom: {
+				meetingId: meetingId
+			}
+		});
+		
 		setCall(_call);
 
 		return () => {

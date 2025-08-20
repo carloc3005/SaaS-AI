@@ -15,12 +15,9 @@ export const CallView = ({
 	const trpc = useTRPC();
 	const { data } = useSuspenseQuery(trpc.meetings.getOne.queryOptions({ id: meetingId }));
 
-	if (data.status === "upcoming") {
-		return (
-			<div className="flex h-screen items-center justify-center">
-				<ErrorState title="Meeting hasn't started yet" description="Please wait for the meeting to begin"/>
-			</div>
-		)
+	// For now, allow joining if status is upcoming or active
+	if (data.status === "upcoming" || data.status === "active") {
+		return <CallProvider meetingId={meetingId} meetingName={data.name}/>
 	}
 
 	if (data.status === "completed" || data.status === "cancelled") {
