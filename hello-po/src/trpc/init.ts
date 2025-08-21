@@ -2,17 +2,39 @@ import { auth } from '@/lib/auth';
 import { initTRPC, TRPCError } from '@trpc/server';
 import { headers } from 'next/headers';
 import { cache } from 'react';
-export const createTRPCContext = cache(async () => {
+
+type TRPCContext = {
+  session: Awaited<ReturnType<typeof auth.api.getSession>> | null;
+  userId: string | null;
+};
+
+export const createTRPCContext = cache(async (): Promise<TRPCContext> => {
   /**
    * @see: https://trpc.io/docs/server/context
    */
-  return { userId: 'user_123' };
+  try {
+    const session = await auth.api.getSession({ 
+      headers: await headers(),
+    });
+    
+    return { 
+      session,
+      userId: session?.user?.id || null 
+    };
+  } catch (error) {
+    // If session retrieval fails, return null session
+    console.warn('Failed to get session in TRPC context:', error);
+    return { 
+      session: null,
+      userId: null 
+    };
+  }
 });
 // Avoid exporting the entire t-object
 // since it's not very descriptive.
 // For instance, the use of a t variable
 // is common in i18n libraries.
-const t = initTRPC.create({
+const t = initTRPC.context<TRPCContext>().create({
   /**
    * @see https://trpc.io/docs/server/data-transformers
    */
@@ -23,13 +45,9 @@ export const createTRPCRouter = t.router;
 export const createCallerFactory = t.createCallerFactory;
 export const baseProcedure = t.procedure;
 export const protectedProcedure = baseProcedure.use(async ({ctx, next}) => {
-    const session = await auth.api.getSession({ 
-      headers: await headers(),
-});
-
-  if (!session) {
+  if (!ctx.session) {
     throw new TRPCError ({ code: "UNAUTHORIZED", message: "Unauthorized" });
   }
 
-  return next ({ ctx: {...ctx, auth: session }});
+  return next ({ ctx: {...ctx, session: ctx.session }});
 });

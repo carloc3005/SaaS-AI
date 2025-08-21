@@ -19,7 +19,7 @@ export const agentsRouter = createTRPCRouter({
                 .where(
                     and(
                         eq(agents.id, input.id),
-                        eq(agents.userId, ctx.auth.user.id),
+                        eq(agents.userId, ctx.session.user.id),
                     )
                 )
                 .returning();
@@ -42,7 +42,7 @@ export const agentsRouter = createTRPCRouter({
                 .where(
                     and(
                         eq(agents.id, input.id),
-                        eq(agents.userId, ctx.auth.user.id),
+                        eq(agents.userId, ctx.session.user.id),
                     ),
                 )
                 .returning();
@@ -68,7 +68,7 @@ export const agentsRouter = createTRPCRouter({
             .from(agents)
             .where(and(
                 eq(agents.id, input.id),
-                eq(agents.userId, ctx.auth.user.id),
+                eq(agents.userId, ctx.session.user.id),
             )
             );
 
@@ -102,7 +102,7 @@ export const agentsRouter = createTRPCRouter({
                 .from(agents)
                 .where(
                     and(
-                        eq(agents.userId, ctx.auth.user.id),
+                        eq(agents.userId, ctx.session.user.id),
                         search ? ilike(agents.name, `%${search}%`) : undefined,
                     )
                 )
@@ -115,7 +115,7 @@ export const agentsRouter = createTRPCRouter({
                 .from(agents)
                 .where(
                     and(
-                        eq(agents.userId, ctx.auth.user.id),
+                        eq(agents.userId, ctx.session.user.id),
                         search ? ilike(agents.name, `%${search}%`) : undefined,
                     )
                 )
@@ -135,7 +135,7 @@ export const agentsRouter = createTRPCRouter({
             .insert(agents)
             .values({
                 ...input,
-                userId: ctx.auth.user.id,
+                userId: ctx.session.user.id,
             })
             .returning();
 

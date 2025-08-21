@@ -25,12 +25,12 @@ const meetingUpdateSchema = z.object({
 export const meetingsRouter = createTRPCRouter({
     generateToken: protectedProcedure.mutation(async ({ ctx }) => {
         await streamVideo.upsertUsers([{
-            id: ctx.auth.user.id,
-            name: ctx.auth.user.name,
+            id: ctx.session.user.id,
+            name: ctx.session.user.name,
             role: "admin",
             image: 
-                ctx.auth.user.image ?? 
-                generatedAvatarURI({ seed: ctx.auth.user.name, variant: "initials" })
+                ctx.session.user.image ?? 
+                generatedAvatarURI({ seed: ctx.session.user.name, variant: "initials" })
         },
     ]);
 
@@ -38,7 +38,7 @@ export const meetingsRouter = createTRPCRouter({
         const issueAt =  Math.floor(Date.now() / 1000 ) - 60;
 
         const token = streamVideo.generateUserToken({
-            user_id: ctx.auth.user.id,
+            user_id: ctx.session.user.id,
             exp: expirationTime,
             validity_in_seconds: issueAt,
         });
@@ -53,14 +53,14 @@ export const meetingsRouter = createTRPCRouter({
                 .insert(meetings)
                 .values({
                     ...input,
-                    userId: ctx.auth.user.id,
+                    userId: ctx.session.user.id,
                 })
                 .returning();
             
             const call = streamVideo.video.call("default", createdMeeting.id);
             await call.create({
                 data: {
-                    created_by_id: ctx.auth.user.id,
+                    created_by_id: ctx.session.user.id,
                     custom: {
                         meetingId: createdMeeting.id,
                         meetingName: createdMeeting.name
@@ -139,7 +139,7 @@ export const meetingsRouter = createTRPCRouter({
                 .innerJoin(agents, eq(meetings.agentId, agents.id))
                 .where(
                     and(
-                        eq(meetings.userId, ctx.auth.user.id),
+                        eq(meetings.userId, ctx.session.user.id),
                         agentId ? eq(meetings.agentId, agentId) : undefined,
                         search ? ilike(meetings.name, `%${search}%`) : undefined,
                         status ? eq(meetings.status, status) : undefined,
@@ -155,7 +155,7 @@ export const meetingsRouter = createTRPCRouter({
                 .innerJoin(agents, eq(meetings.agentId, agents.id))
                 .where(
                     and(
-                        eq(meetings.userId, ctx.auth.user.id),
+                        eq(meetings.userId, ctx.session.user.id),
                         agentId ? eq(meetings.agentId, agentId) : undefined,
                         search ? ilike(meetings.name, `%${search}%`) : undefined,
                         status ? eq(meetings.status, status) : undefined,
@@ -185,7 +185,7 @@ export const meetingsRouter = createTRPCRouter({
                 .where(
                     and(
                         eq(meetings.id, input.id),
-                        eq(meetings.userId, ctx.auth.user.id),
+                        eq(meetings.userId, ctx.session.user.id),
                     )
                 );
 
@@ -207,7 +207,7 @@ export const meetingsRouter = createTRPCRouter({
                 .where(
                     and(
                         eq(meetings.id, input.id),
-                        eq(meetings.userId, ctx.auth.user.id),
+                        eq(meetings.userId, ctx.session.user.id),
                     )
                 )
                 .returning();
@@ -233,7 +233,7 @@ export const meetingsRouter = createTRPCRouter({
                 .where(
                     and(
                         eq(meetings.id, id),
-                        eq(meetings.userId, ctx.auth.user.id),
+                        eq(meetings.userId, ctx.session.user.id),
                     )
                 )
                 .returning();

@@ -10,10 +10,16 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 
 export const DashboardUserButton = () => {
-    const { data, isPending } = authClient.useSession();
+    const { data, isPending, error } = authClient.useSession();
     const router = useRouter();
     const isMobile = useIsMobile();
     const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+    // If there's an auth error, redirect to sign-in
+    if (error) {
+        router.push("/sign-in");
+        return null;
+    }
 
     const onLogout = async () => {
         setIsLoggingOut(true);
