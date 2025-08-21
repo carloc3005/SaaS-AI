@@ -75,6 +75,8 @@ export const meetings = pgTable("meetings", {
     .notNull()
     .references(() => agents.id, { onDelete: "cascade" }),
   status: meetingStatus("status").notNull().default("upcoming"),
+  isPrivate: boolean("is_private").notNull().default(false),
+  pin: text("pin"), // 4-digit PIN for private meetings
   startedAt: timestamp("started_at"),
   endedAt: timestamp("ended_at"),
   transcriptUrl: text("transcript_url"),

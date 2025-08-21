@@ -13,6 +13,7 @@ import { generatedAvatarURI } from "@/lib/avatar";
 const meetingCreateSchema = z.object({
     name: z.string().min(1, { message: "Name is required" }),
     agentId: z.string().min(1, { message: "Agent ID is required" }),
+    isPrivate: z.boolean(),
 });
 
 const meetingUpdateSchema = z.object({
@@ -20,7 +21,13 @@ const meetingUpdateSchema = z.object({
     name: z.string().min(1, { message: "Name is required" }).optional(),
     status: z.enum(["upcoming", "active", "completed", "processing", "cancelled"]).optional(),
     summary: z.string().optional(),
+    isPrivate: z.boolean().optional(),
 });
+
+// Helper function to generate 4-digit PIN
+function generateMeetingPin(): string {
+    return Math.floor(1000 + Math.random() * 9000).toString();
+}
 
 export const meetingsRouter = createTRPCRouter({
     generateToken: protectedProcedure.mutation(async ({ ctx }) => {
@@ -49,10 +56,15 @@ export const meetingsRouter = createTRPCRouter({
     create: protectedProcedure
         .input(meetingCreateSchema)
         .mutation(async ({ input, ctx }) => {
+            console.log("Server received meeting creation input:", input); // Debug log
+            const pin = input.isPrivate ? generateMeetingPin() : null;
+            console.log("Generated PIN:", pin); // Debug log
+            
             const [createdMeeting] = await db
                 .insert(meetings)
                 .values({
                     ...input,
+                    pin,
                     userId: ctx.session.user.id,
                 })
                 .returning();
@@ -246,5 +258,45 @@ export const meetingsRouter = createTRPCRouter({
             }
 
             return updatedMeeting;
+        }),
+
+    verifyPin: protectedProcedure
+        .input(z.object({ 
+            id: z.string(),
+            pin: z.string().length(4, "PIN must be 4 digits")
+        }))
+        .mutation(async ({ ctx, input }) => {
+            const [meeting] = await db
+                .select()
+                .from(meetings)
+                .where(
+                    and(
+                        eq(meetings.id, input.id),
+                        eq(meetings.userId, ctx.session.user.id),
+                    )
+                );
+
+            if (!meeting) {
+                throw new TRPCError({
+                    code: "NOT_FOUND",
+                    message: "Meeting not found"
+                });
+            }
+
+            if (!meeting.isPrivate || !meeting.pin) {
+                throw new TRPCError({
+                    code: "BAD_REQUEST",
+                    message: "This meeting is not private"
+                });
+            }
+
+            if (meeting.pin !== input.pin) {
+                throw new TRPCError({
+                    code: "UNAUTHORIZED",
+                    message: "Invalid PIN"
+                });
+            }
+
+            return { success: true };
         }),
 });

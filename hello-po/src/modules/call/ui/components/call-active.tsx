@@ -4,6 +4,7 @@ import { useState } from "react";
 import { CallControls, SpeakerLayout, useCall } from "@stream-io/video-react-sdk";
 import { Button } from "@/components/ui/button";
 import { UserPlus } from "lucide-react";
+import { MicrophoneIndicator } from "./microphone-indicator";
 
 interface Props {
     onLeave: () => void;
@@ -57,6 +58,8 @@ export const CallActive = ({ onLeave, meetingName}: Props) => {
                     <h4 className="text-base">
                         {meetingName}
                     </h4>
+                    {/* Microphone Speaking Indicator */}
+                    <MicrophoneIndicator size="md" className="ml-2" />
                 </div>
                 
                 <Button 

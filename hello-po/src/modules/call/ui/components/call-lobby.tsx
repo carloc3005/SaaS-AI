@@ -7,6 +7,7 @@ import {
  } from "@stream-io/video-react-sdk";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { MicrophoneIndicator } from "./microphone-indicator";
 import "@stream-io/video-react-sdk/dist/css/styles.css";
 
 interface Props {
@@ -43,6 +44,7 @@ export const CallLobby = ({ onJoin, isJoining = false }: Props) => {
                         <div className="flex items-center justify-center gap-4">
                             <ToggleVideoPreviewButton />
                             <ToggleAudioPreviewButton />
+                            <MicrophoneIndicator size="lg" className="ml-2" />
                         </div>
 
                         {/* Permission Status */}

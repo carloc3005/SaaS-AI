@@ -1,0 +1,374 @@
+/* Sidebar Theme Styles */
+.themed-sidebar {
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.themed-sidebar * {
+    transition: color 0.2s ease, fill 0.2s ease;
+}
+
+/* Override sidebar ring variables globally when themed sidebar is present */
+.themed-sidebar,
+.theme-light .themed-sidebar,
+.theme-blue .themed-sidebar,
+.theme-green .themed-sidebar,
+.theme-purple .themed-sidebar,
+.theme-red .themed-sidebar,
+.theme-orange .themed-sidebar,
+.theme-dark .themed-sidebar,
+.theme-pink .themed-sidebar {
+    --sidebar-ring: transparent !important;
+    --sidebar-border: transparent !important;
+}
+
+/* AGGRESSIVE border and outline removal - highest specificity */
+.themed-sidebar [data-sidebar-menu-button],
+.themed-sidebar [data-sidebar-menu-button] *,
+.themed-sidebar [data-sidebar="menu-button"],
+.themed-sidebar [data-sidebar="menu-button"] *,
+.themed-sidebar [data-slot="sidebar-menu-button"],
+.themed-sidebar [data-slot="sidebar-menu-button"] *,
+.themed-sidebar button,
+.themed-sidebar button *,
+.themed-sidebar a,
+.themed-sidebar a *,
+.themed-sidebar .h-10,
+.themed-sidebar [class*="h-10"],
+.themed-sidebar [class*="h-10"] *,
+.themed-sidebar .sidebar-menu-item,
+.themed-sidebar .sidebar-menu-item *,
+html .themed-sidebar [data-sidebar-menu-button],
+html .themed-sidebar [data-sidebar="menu-button"],
+html .themed-sidebar [data-slot="sidebar-menu-button"],
+html .themed-sidebar button,
+html .themed-sidebar a {
+    border: 0px solid transparent !important;
+    border-width: 0px !important;
+    border-style: none !important;
+    outline: 0px solid transparent !important;
+    outline-width: 0px !important;
+    outline-style: none !important;
+    box-shadow: none !important;
+    border-radius: 0.375rem !important;
+    --tw-border-opacity: 0 !important;
+    --tw-ring-shadow: 0 0 #0000 !important;
+    --tw-ring-offset-shadow: 0 0 #0000 !important;
+    --tw-shadow: 0 0 #0000 !important;
+    --tw-shadow-colored: 0 0 #0000 !important;
+    /* Override the sidebar ring variables */
+    --sidebar-ring: transparent !important;
+}
+
+.themed-sidebar [data-sidebar-menu-button]:focus,
+.themed-sidebar [data-sidebar-menu-button]:focus-visible,
+.themed-sidebar [data-sidebar-menu-button]:focus-within,
+.themed-sidebar [data-sidebar="menu-button"]:focus,
+.themed-sidebar [data-sidebar="menu-button"]:focus-visible,
+.themed-sidebar [data-sidebar="menu-button"]:focus-within,
+.themed-sidebar [data-slot="sidebar-menu-button"]:focus,
+.themed-sidebar [data-slot="sidebar-menu-button"]:focus-visible,
+.themed-sidebar [data-slot="sidebar-menu-button"]:focus-within,
+.themed-sidebar button:focus,
+.themed-sidebar button:focus-visible,
+.themed-sidebar button:focus-within,
+.themed-sidebar a:focus,
+.themed-sidebar a:focus-visible,
+.themed-sidebar a:focus-within,
+.themed-sidebar .h-10:focus,
+.themed-sidebar [class*="h-10"]:focus,
+.themed-sidebar .sidebar-menu-item:focus,
+.themed-sidebar .sidebar-menu-item:focus-visible,
+html .themed-sidebar [data-sidebar-menu-button]:focus,
+html .themed-sidebar [data-sidebar="menu-button"]:focus,
+html .themed-sidebar [data-slot="sidebar-menu-button"]:focus,
+html .themed-sidebar button:focus,
+html .themed-sidebar a:focus {
+    border: 0px solid transparent !important;
+    border-width: 0px !important;
+    border-style: none !important;
+    outline: 0px solid transparent !important;
+    outline-width: 0px !important;
+    outline-style: none !important;
+    box-shadow: none !important;
+    --tw-border-opacity: 0 !important;
+    --tw-ring-shadow: 0 0 #0000 !important;
+    --tw-ring-offset-shadow: 0 0 #0000 !important;
+    --tw-shadow: 0 0 #0000 !important;
+    --tw-shadow-colored: 0 0 #0000 !important;
+    --sidebar-ring: transparent !important;
+}
+
+/* Remove any possible Tailwind focus rings with maximum specificity */
+.themed-sidebar *:focus,
+.themed-sidebar *:focus-visible,
+.themed-sidebar *:focus-within,
+html .themed-sidebar *:focus,
+html .themed-sidebar *:focus-visible {
+    --tw-ring-shadow: 0 0 #0000 !important;
+    --tw-ring-offset-shadow: 0 0 #0000 !important;
+    --tw-shadow: 0 0 #0000 !important;
+    --tw-shadow-colored: 0 0 #0000 !important;
+    box-shadow: none !important;
+    outline: 0px solid transparent !important;
+    outline-width: 0px !important;
+    outline-style: none !important;
+    border: 0px solid transparent !important;
+    border-width: 0px !important;
+    border-style: none !important;
+}
+
+/* Custom sidebar menu item styling with maximum specificity */
+.sidebar-menu-item,
+html .sidebar-menu-item,
+.themed-sidebar .sidebar-menu-item {
+    transition: background-color 0.2s ease !important;
+    border: 0px solid transparent !important;
+    border-width: 0px !important;
+    border-style: none !important;
+    outline: 0px solid transparent !important;
+    outline-width: 0px !important;
+    outline-style: none !important;
+    box-shadow: none !important;
+    border-radius: 0.375rem !important;
+}
+
+.sidebar-menu-item:hover,
+.sidebar-menu-item:focus,
+.sidebar-menu-item:focus-visible,
+html .sidebar-menu-item:hover,
+html .sidebar-menu-item:focus,
+.themed-sidebar .sidebar-menu-item:hover {
+    transition: background-color 0.2s ease !important;
+    border: 0px solid transparent !important;
+    border-width: 0px !important;
+    border-style: none !important;
+    outline: 0px solid transparent !important;
+    outline-width: 0px !important;
+    outline-style: none !important;
+    box-shadow: none !important;
+}
+
+/* Light Theme */
+.theme-light .themed-sidebar,
+.theme-light .themed-sidebar [data-sidebar] {
+    background-color: #ffffff !important;
+    color: #1f2937 !important;
+}
+
+.theme-light .themed-sidebar * {
+    color: #1f2937 !important;
+}
+
+.theme-light .themed-sidebar svg {
+    fill: #1f2937 !important;
+}
+
+.theme-light .themed-sidebar [data-sidebar-menu-button]:hover {
+    background-color: rgba(31, 41, 55, 0.05) !important;
+    border: none !important;
+}
+
+.theme-light .themed-sidebar [data-sidebar-menu-button][data-active="true"] {
+    background-color: rgba(31, 41, 55, 0.1) !important;
+    border: none !important;
+}
+
+/* Ocean Blue Theme */
+.theme-blue .themed-sidebar,
+.theme-blue .themed-sidebar [data-sidebar] {
+    background-color: #1e40af !important;
+    color: #ffffff !important;
+}
+
+.theme-blue .themed-sidebar * {
+    color: #ffffff !important;
+}
+
+.theme-blue .themed-sidebar svg {
+    fill: #ffffff !important;
+}
+
+.theme-blue .themed-sidebar [data-sidebar-menu-button]:hover {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    border: none !important;
+}
+
+.theme-blue .themed-sidebar [data-sidebar-menu-button][data-active="true"] {
+    background-color: rgba(255, 255, 255, 0.15) !important;
+    border: none !important;
+}
+
+/* Forest Green Theme */
+.theme-green .themed-sidebar,
+.theme-green .themed-sidebar [data-sidebar] {
+    background-color: #059669 !important;
+    color: #ffffff !important;
+}
+
+.theme-green .themed-sidebar * {
+    color: #ffffff !important;
+}
+
+.theme-green .themed-sidebar svg {
+    fill: #ffffff !important;
+}
+
+.theme-green .themed-sidebar [data-sidebar-menu-button]:hover {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    border: none !important;
+}
+
+.theme-green .themed-sidebar [data-sidebar-menu-button][data-active="true"] {
+    background-color: rgba(255, 255, 255, 0.15) !important;
+    border: none !important;
+}
+
+/* Royal Purple Theme */
+.theme-purple .themed-sidebar,
+.theme-purple .themed-sidebar [data-sidebar] {
+    background-color: #7c3aed !important;
+    color: #ffffff !important;
+}
+
+.theme-purple .themed-sidebar * {
+    color: #ffffff !important;
+}
+
+.theme-purple .themed-sidebar svg {
+    fill: #ffffff !important;
+}
+
+.theme-purple .themed-sidebar [data-sidebar-menu-button]:hover {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    border: none !important;
+}
+
+.theme-purple .themed-sidebar [data-sidebar-menu-button][data-active="true"] {
+    background-color: rgba(255, 255, 255, 0.15) !important;
+    border: none !important;
+}
+
+/* Crimson Red Theme */
+.theme-red .themed-sidebar,
+.theme-red .themed-sidebar [data-sidebar] {
+    background-color: #dc2626 !important;
+    color: #ffffff !important;
+}
+
+.theme-red .themed-sidebar * {
+    color: #ffffff !important;
+}
+
+.theme-red .themed-sidebar svg {
+    fill: #ffffff !important;
+}
+
+.theme-red .themed-sidebar [data-sidebar-menu-button]:hover {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    border: none !important;
+}
+
+.theme-red .themed-sidebar [data-sidebar-menu-button][data-active="true"] {
+    background-color: rgba(255, 255, 255, 0.15) !important;
+    border: none !important;
+}
+
+/* Sunset Orange Theme */
+.theme-orange .themed-sidebar,
+.theme-orange .themed-sidebar [data-sidebar] {
+    background-color: #ea580c !important;
+    color: #ffffff !important;
+}
+
+.theme-orange .themed-sidebar * {
+    color: #ffffff !important;
+}
+
+.theme-orange .themed-sidebar svg {
+    fill: #ffffff !important;
+}
+
+.theme-orange .themed-sidebar [data-sidebar-menu-button]:hover {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    border: none !important;
+}
+
+.theme-orange .themed-sidebar [data-sidebar-menu-button][data-active="true"] {
+    background-color: rgba(255, 255, 255, 0.15) !important;
+    border: none !important;
+}
+
+/* Midnight Dark Theme */
+.theme-dark .themed-sidebar,
+.theme-dark .themed-sidebar [data-sidebar] {
+    background-color: #111827 !important;
+    color: #f9fafb !important;
+}
+
+.theme-dark .themed-sidebar * {
+    color: #f9fafb !important;
+}
+
+.theme-dark .themed-sidebar svg {
+    fill: #f9fafb !important;
+}
+
+.theme-dark .themed-sidebar [data-sidebar-menu-button]:hover {
+    background-color: rgba(249, 250, 251, 0.1) !important;
+    border: none !important;
+}
+
+.theme-dark .themed-sidebar [data-sidebar-menu-button][data-active="true"] {
+    background-color: rgba(249, 250, 251, 0.15) !important;
+    border: none !important;
+}
+
+/* Pink Blossom Theme */
+.theme-pink .themed-sidebar,
+.theme-pink .themed-sidebar [data-sidebar] {
+    background-color: #db2777 !important;
+    color: #ffffff !important;
+}
+
+.theme-pink .themed-sidebar * {
+    color: #ffffff !important;
+}
+
+.theme-pink .themed-sidebar svg {
+    fill: #ffffff !important;
+}
+
+.theme-pink .themed-sidebar [data-sidebar-menu-button]:hover {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    border: none !important;
+}
+
+.theme-pink .themed-sidebar [data-sidebar-menu-button][data-active="true"] {
+    background-color: rgba(255, 255, 255, 0.15) !important;
+    border: none !important;
+}
+
+/* Additional overrides to ensure themes work */
+[data-sidebar="sidebar"] {
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Force override any conflicting styles */
+.themed-sidebar [data-sidebar-header] *,
+.themed-sidebar [data-sidebar-content] *,
+.themed-sidebar [data-sidebar-footer] *,
+.themed-sidebar [data-sidebar-menu-button] *,
+.themed-sidebar [data-sidebar-group] *,
+.themed-sidebar span,
+.themed-sidebar a,
+.themed-sidebar button,
+.themed-sidebar p {
+    color: inherit !important;
+}
+
+/* Ensure SVG icons inherit the current color */
+.themed-sidebar svg,
+.themed-sidebar svg * {
+    fill: currentColor !important;
+    color: inherit !important;
+}

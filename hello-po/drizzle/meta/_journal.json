@@ -36,6 +36,13 @@
       "when": 1754370795011,
       "tag": "0004_happy_kid_colt",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1755816727010,
+      "tag": "0005_strong_multiple_man",
+      "breakpoints": true
     }
   ]
 }

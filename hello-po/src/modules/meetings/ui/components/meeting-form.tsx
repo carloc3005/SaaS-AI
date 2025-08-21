@@ -3,10 +3,11 @@ import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { meetingsInsertedSchema } from "../views/schemas";
 import { MeetingGetOne } from "../views/types";
@@ -14,12 +15,13 @@ import { CommandSelect } from "@/components/command-select";
 import { GeneratedAvatar } from "@/components/generated-avatar";
 import { NewAgentDialog } from "@/modules/agents/server/ui/components/new-agent-dialog";
 import { useState } from "react";
+import { Lock, Unlock } from "lucide-react";
 
 // Meeting schemas - using the imported schema
 const meetingCreateSchema = meetingsInsertedSchema;
 
 interface MeetingFormProps {
-    onSucess?: (id?: string) => void;
+    onSucess?: (id?: string, meetingData?: any) => void;
     onCancel?: () => void;
     initialValues?: MeetingGetOne;
 }
@@ -48,7 +50,16 @@ export const MeetingForm = ({
                 }
 
                 toast.success("Meeting created successfully!");
-                onSucess?.(data.id);
+                
+                // Show PIN for private meetings
+                if (data.isPrivate && data.pin) {
+                    toast.success(`Meeting PIN: ${data.pin}`, {
+                        description: "Save this PIN - participants will need it to join the meeting.",
+                        duration: 10000,
+                    });
+                }
+                
+                onSucess?.(data.id, data);
             },
             onError: (error) => {
                 toast.error(error.message);
@@ -69,7 +80,7 @@ export const MeetingForm = ({
                         trpc.meetings.getOne.queryOptions({ id: initialValues.id }),
                     )
                 }
-                onSucess?.();
+                onSucess?.(initialValues?.id);
             },
             onError: (error) => {
                 toast.error(error.message);
@@ -82,6 +93,7 @@ export const MeetingForm = ({
         defaultValues: {
             name: initialValues?.name ?? "",
             agentId: initialValues?.agentId ?? "",
+            isPrivate: initialValues?.isPrivate ?? false,
         },
     });
 
@@ -90,6 +102,7 @@ export const MeetingForm = ({
     const isPending = createMeeting.isPending || updateMeeting.isPending;
 
     const onSubmit = (values: z.infer<typeof meetingCreateSchema>) => {
+        console.log("Form submission values:", values); // Debug log
         if (isEdit) {
             updateMeeting.mutate({ id: initialValues.id, ...values });
         } else {
@@ -173,6 +186,30 @@ export const MeetingForm = ({
                             <FormMessage />
                         </FormItem>
                     )} />
+
+                    <FormField name="isPrivate" control={form.control} render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                            <div className="space-y-0.5">
+                                <FormLabel className="text-base flex items-center gap-x-2">
+                                    {field.value ? <Lock className="size-4" /> : <Unlock className="size-4" />}
+                                    Private Meeting
+                                </FormLabel>
+                                <FormDescription>
+                                    {field.value 
+                                        ? "This meeting will require a 4-digit PIN to join. You'll receive the PIN after creating the meeting."
+                                        : "Anyone with the meeting link can join this meeting."
+                                    }
+                                </FormDescription>
+                            </div>
+                            <FormControl>
+                                <Switch
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                />
+                            </FormControl>
+                        </FormItem>
+                    )} />
+
                     <div className="flex justify-end gap-x-2 pt-4">
                         {onCancel && (
                             <Button variant="ghost" disabled={isPending} type="button" onClick={() => onCancel()}>
