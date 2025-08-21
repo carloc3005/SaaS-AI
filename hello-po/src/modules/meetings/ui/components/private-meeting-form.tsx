@@ -1,41 +1,33 @@
 import { useTRPC } from "@/trpc/client";
-import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
-
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { meetingsInsertedSchema } from "../views/schemas";
-import { MeetingGetOne } from "../views/types";
+import { privateMeetingsInsertedSchema } from "../views/schemas";
 import { CommandSelect } from "@/components/command-select";
 import { GeneratedAvatar } from "@/components/generated-avatar";
 import { NewAgentDialog } from "@/modules/agents/server/ui/components/new-agent-dialog";
 import { useState } from "react";
+import { Lock } from "lucide-react";
 
-
-// Meeting schemas - using the imported schema
-const meetingCreateSchema = meetingsInsertedSchema;
-
-interface MeetingFormProps {
-    onSucess?: () => void;
+interface PrivateMeetingFormProps {
+    onSuccess?: (meetingData: any) => void;
     onCancel?: () => void;
-    initialValues?: MeetingGetOne;
 }
 
-export const MeetingForm = ({
-    onSucess,
+export const PrivateMeetingForm = ({
+    onSuccess,
     onCancel,
-    initialValues,
-}: MeetingFormProps) => {
+}: PrivateMeetingFormProps) => {
     const trpc = useTRPC();
     const queryClient = useQueryClient();
     const [openNewAgentDialog, setOpenNewAgentDialog] = useState(false);
 
-    const createMeeting = useMutation(
+    const createPrivateMeeting = useMutation(
         trpc.meetings.create.mutationOptions({
             onSuccess: (data) => {
                 // Invalidate all meetings queries
@@ -43,14 +35,17 @@ export const MeetingForm = ({
                     queryKey: ['meetings'],
                 });
 
-                if (initialValues?.id) {
-                    queryClient.invalidateQueries(
-                        trpc.meetings.getOne.queryOptions({ id: initialValues.id }),
-                    )
+                toast.success("Private meeting created successfully!");
+                
+                // Show PIN for private meetings
+                if (data.isPrivate && data.pin) {
+                    toast.success(`Meeting PIN: ${data.pin}`, {
+                        description: "Save this PIN - participants will need it to join the meeting.",
+                        duration: 10000,
+                    });
                 }
-
-                toast.success("Meeting created successfully!");
-                onSucess?.();
+                
+                onSuccess?.(data);
             },
             onError: (error) => {
                 toast.error(error.message);
@@ -58,46 +53,20 @@ export const MeetingForm = ({
         })
     );
 
-    const updateMeeting = useMutation(
-        trpc.meetings.update.mutationOptions({
-            onSuccess: () => {
-                // Invalidate all meetings queries
-                queryClient.invalidateQueries(
-                    trpc.meetings.getMany.queryOptions({})
-                );
-
-                if (initialValues?.id) {
-                    queryClient.invalidateQueries(
-                        trpc.meetings.getOne.queryOptions({ id: initialValues.id }),
-                    )
-                }
-                onSucess?.();
-            },
-            onError: (error) => {
-                toast.error(error.message);
-            },
-        })
-    );
-
-    const form = useForm<z.infer<typeof meetingCreateSchema>>({
-        resolver: zodResolver(meetingCreateSchema),
+    const form = useForm<z.infer<typeof privateMeetingsInsertedSchema>>({
+        resolver: zodResolver(privateMeetingsInsertedSchema),
         defaultValues: {
-            name: initialValues?.name ?? "",
-            agentId: initialValues?.agentId ?? "",
+            name: "",
+            agentId: "",
+            isPrivate: true,
         },
     });
 
-    const isEdit = !!initialValues?.id;
+    const isPending = createPrivateMeeting.isPending;
 
-    const isPending = createMeeting.isPending || updateMeeting.isPending;
-
-    const onSubmit = (values: z.infer<typeof meetingCreateSchema>) => {
-        console.log("Form submission values:", values); // Debug log
-        if (isEdit) {
-            updateMeeting.mutate({ id: initialValues.id, ...values });
-        } else {
-            createMeeting.mutate({ ...values, isPrivate: false });
-        }
+    const onSubmit = (values: z.infer<typeof privateMeetingsInsertedSchema>) => {
+        console.log("Private meeting form submission values:", values);
+        createPrivateMeeting.mutate(values);
     };
 
     return (
@@ -106,8 +75,6 @@ export const MeetingForm = ({
                 open={openNewAgentDialog} 
                 onOpenChange={(open) => {
                     setOpenNewAgentDialog(open);
-                    // When dialog closes after successful creation, 
-                    // the query will be invalidated and agents list will refresh
                 }} 
             />
             <Form {...form}>
@@ -115,9 +82,9 @@ export const MeetingForm = ({
                     
                     <FormField name="name" control={form.control} render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Meeting Name</FormLabel>
+                            <FormLabel>Private Meeting Name</FormLabel>
                             <FormControl>
-                                <Input {...field} placeholder="e.g. Weekly Team Meeting" />
+                                <Input {...field} placeholder="e.g. Confidential Team Discussion" />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -170,12 +137,23 @@ export const MeetingForm = ({
                                         }
                                     }}
                                     value={field.value}
-                                    placeholder="Select an agent for this meeting"
+                                    placeholder="Select an agent for this private meeting"
                                 />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
                     )} />
+
+                    {/* Private Meeting Info */}
+                    <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                        <div className="flex items-center gap-x-2 mb-2">
+                            <Lock className="size-4 text-purple-600" />
+                            <span className="font-medium text-purple-900">Private Meeting</span>
+                        </div>
+                        <p className="text-sm text-purple-700">
+                            This meeting will be secured with a 4-digit PIN. Only invited participants with the PIN can join.
+                        </p>
+                    </div>
 
                     <div className="flex justify-end gap-x-2 pt-4">
                         {onCancel && (
@@ -183,8 +161,13 @@ export const MeetingForm = ({
                                 Cancel
                             </Button>
                         )}
-                        <Button disabled={isPending} type="submit">
-                            {isPending ? "Saving..." : isEdit ? "Update" : "Create"}
+                        <Button 
+                            disabled={isPending} 
+                            type="submit"
+                            className="bg-purple-600 hover:bg-purple-700"
+                        >
+                            <Lock className="h-4 w-4 mr-2" />
+                            {isPending ? "Creating..." : "Create Private Meeting"}
                         </Button>
                     </div>
                 </form>
