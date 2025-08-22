@@ -1,10 +1,14 @@
+"use client";
+
 import { EmptyState } from "@/components/empty-state"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { CalendarPlusIcon, HomeIcon, PlayIcon, BrainIcon, MessageSquareIcon, SparklesIcon, CheckCircleIcon } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { CalendarPlusIcon, HomeIcon, PlayIcon, BrainIcon, MessageSquareIcon, CheckCircleIcon, SearchIcon, CopyIcon, DownloadIcon } from "lucide-react"
 import Link from "next/link"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import Highlighter from "react-highlight-words"
 
 interface Props {
 	meetingId: string,
@@ -22,70 +26,76 @@ export const CompletedState = ({
 	isDownloading = false,
 }: Props) => {
 	const [activeTab, setActiveTab] = useState("summary");
+	const [searchTerm, setSearchTerm] = useState("");
+	const [isClient, setIsClient] = useState(false);
 
-	const formatSummary = (text: string) => {
-		// Split the text into sections
-		const sections = text.split(/(?=###)/);
+	useEffect(() => {
+		setIsClient(true);
+	}, []);
+
+	const highlightText = (text: string) => {
+		const searchWords = searchTerm.trim() ? searchTerm.trim().split(/\s+/) : [];
 		
-		return sections.map((section, index) => {
-			if (section.trim().startsWith('### Overview')) {
-				const content = section.replace('### Overview', '').trim();
-				return `<div key=${index} class="mb-8">
-					<h2 class="text-xl font-bold text-gray-900 mb-4 flex items-center gap-3">
-						<span class="w-6 h-6 bg-blue-500 rounded-lg flex items-center justify-center">
-							<svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-								<path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-							</svg>
-						</span>
-						Overview
-					</h2>
-					<p class="text-gray-700 leading-relaxed pl-9">${content}</p>
-				</div>`;
-			} else if (section.trim().startsWith('### Notes')) {
-				let content = section.replace('### Notes', '').trim();
-				
-				// Parse subsections within Notes
-				const noteSections = content.split(/(?=####)/);
-				
-				const formattedNotes = noteSections.map((noteSection, noteIndex) => {
-					if (noteSection.trim().startsWith('####')) {
-						const lines = noteSection.split('\n');
-						const title = lines[0].replace('####', '').trim();
-						const bullets = lines.slice(1).filter(line => line.trim().startsWith('-'));
-						
-						return `<div class="mb-6">
-							<h4 class="text-base font-semibold text-gray-800 mb-3 flex items-center gap-2">
-								<span class="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
-								${title}
-							</h4>
-							<ul class="space-y-2 ml-6">
-								${bullets.map(bullet => `<li class="flex items-start gap-3 text-gray-700">
-									<span class="w-1 h-1 bg-gray-400 rounded-full mt-2 flex-shrink-0"></span>
-									<span>${bullet.replace('-', '').trim()}</span>
-								</li>`).join('')}
-							</ul>
-						</div>`;
-					}
-					return '';
-				}).join('');
-				
-				return `<div key=${index} class="mb-8">
-					<h2 class="text-xl font-bold text-gray-900 mb-6 flex items-center gap-3">
-						<span class="w-6 h-6 bg-teal-500 rounded-lg flex items-center justify-center">
-							<svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-								<path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
-								<path fill-rule="evenodd" d="M4 5a2 2 0 012-2v1a1 1 0 102 0V3a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 2a1 1 0 000 2h2a1 1 0 100-2H7zm0 4a1 1 0 100 2h2a1 1 0 100-2H7z" clip-rule="evenodd"/>
-							</svg>
-						</span>
-						Key Notes
-					</h2>
-					<div class="space-y-4 pl-9">
-						${formattedNotes}
-					</div>
-				</div>`;
+		if (searchWords.length === 0) {
+			return <span>{text}</span>;
+		}
+		
+		return (
+			<Highlighter
+				highlightClassName="bg-yellow-200 text-yellow-900 px-1 rounded font-medium"
+				searchWords={searchWords}
+				autoEscape={true}
+				textToHighlight={text}
+			/>
+		);
+	};
+
+	const handleCopySummary = async () => {
+		if (summary && isClient && typeof navigator !== 'undefined') {
+			try {
+				await navigator.clipboard.writeText(summary);
+				// You could add a toast notification here
+			} catch (err) {
+				console.error('Failed to copy summary:', err);
 			}
-			return '';
-		}).join('');
+		}
+	};
+
+	const handleDownloadSummary = () => {
+		if (summary && isClient && typeof document !== 'undefined') {
+			const blob = new Blob([summary], { type: 'text/markdown' });
+			const url = URL.createObjectURL(blob);
+			const a = document.createElement('a');
+			a.href = url;
+			a.download = `meeting-summary-${meetingId}.md`;
+			document.body.appendChild(a);
+			a.click();
+			document.body.removeChild(a);
+			URL.revokeObjectURL(url);
+		}
+	};
+
+	const renderSummaryContent = (text: string) => {
+		// Simple summary rendering without complex parsing
+		return (
+			<div className="space-y-4">
+				<div className="mb-6">
+					<h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-3">
+						<span className="w-6 h-6 bg-blue-500 rounded-lg flex items-center justify-center">
+							<CheckCircleIcon className="w-3 h-3 text-white" />
+						</span>
+						Meeting Summary
+					</h2>
+					<div className="text-gray-700 leading-relaxed space-y-3">
+						{text.split('\n').map((line, idx) => 
+							line.trim() ? (
+								<p key={idx} className="pl-9">{highlightText(line.trim())}</p>
+							) : null
+						)}
+					</div>
+				</div>
+			</div>
+		);
 	};
 
 	return (
@@ -139,13 +149,6 @@ export const CompletedState = ({
 							<PlayIcon className="h-4 w-4" />
 							Recording
 						</TabsTrigger>
-						<TabsTrigger 
-							value="ask-ai" 
-							className="flex items-center gap-2 px-4 py-2 data-[state=active]:bg-purple-50 data-[state=active]:text-purple-700 rounded-md"
-						>
-							<MessageSquareIcon className="h-4 w-4" />
-							Ask AI
-						</TabsTrigger>
 					</TabsList>
 					
 					{/* Summary Tab */}
@@ -153,12 +156,51 @@ export const CompletedState = ({
 						<div className="bg-white rounded-lg border border-gray-200 shadow-sm">
 							{summary ? (
 								<div className="p-6">
-									<div 
-										className="max-w-none"
-										dangerouslySetInnerHTML={{ 
-											__html: formatSummary(summary)
-										}}
-									/>
+									{/* Search and Actions Bar */}
+									<div className="mb-6 flex items-center justify-between gap-3 pb-4 border-b border-gray-100">
+										<div className="relative flex-1 max-w-md">
+											<SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+											<Input
+												type="text"
+												placeholder="Search in summary and notes..."
+												value={searchTerm}
+												onChange={(e) => setSearchTerm(e.target.value)}
+												className="pl-10"
+											/>
+										</div>
+										<div className="flex items-center gap-2">
+											{searchTerm && (
+												<Button
+													variant="ghost"
+													size="sm"
+													onClick={() => setSearchTerm("")}
+												>
+													Clear
+												</Button>
+											)}
+											{isClient && (
+												<>
+													<Button
+														variant="outline"
+														size="sm"
+														onClick={handleCopySummary}
+													>
+														<CopyIcon className="h-4 w-4 mr-2" />
+														Copy
+													</Button>
+													<Button
+														variant="outline"
+														size="sm"
+														onClick={handleDownloadSummary}
+													>
+														<DownloadIcon className="h-4 w-4 mr-2" />
+														Download
+													</Button>
+												</>
+											)}
+										</div>
+									</div>
+									{renderSummaryContent(summary)}
 								</div>
 							) : (
 								<div className="p-12 text-center">
@@ -220,25 +262,6 @@ export const CompletedState = ({
 									</div>
 								</div>
 							)}
-						</div>
-					</TabsContent>
-					
-					{/* Ask AI Tab */}
-					<TabsContent value="ask-ai" className="mt-0">
-						<div className="bg-white rounded-lg border border-gray-200 shadow-sm p-12 text-center">
-							<div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-								<MessageSquareIcon className="h-6 w-6 text-purple-600" />
-							</div>
-							<h3 className="text-lg font-semibold text-gray-900 mb-2">Ask AI About This Meeting</h3>
-							<p className="text-gray-600 mb-6 max-w-md mx-auto">
-								Chat with AI to get deeper insights, ask questions, and explore meeting content in detail.
-							</p>
-							<div className="bg-purple-50 rounded-lg p-4 border border-purple-100 max-w-lg mx-auto">
-								<p className="text-purple-700 font-medium mb-1">🚀 Coming Soon</p>
-								<p className="text-gray-600 text-sm">
-									We're building an intelligent chat interface for your meeting insights.
-								</p>
-							</div>
 						</div>
 					</TabsContent>
 				</Tabs>

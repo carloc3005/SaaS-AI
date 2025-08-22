@@ -20,11 +20,7 @@ interface Props {
 }
 
 export const MeetingIdView = ({ meetingId }: Props) => {
-	const trpc = useTRPC();
-	const queryClient = useQueryClient();
-	const router = useRouter();
-
-	// Validate meetingId before making any queries
+	// Validate meetingId FIRST, before any hooks are called
 	if (!meetingId || meetingId === "undefined" || meetingId === "null") {
 		return (
 			<ErrorState 
@@ -34,6 +30,10 @@ export const MeetingIdView = ({ meetingId }: Props) => {
 		);
 	}
 
+	const trpc = useTRPC();
+	const queryClient = useQueryClient();
+	const router = useRouter();
+
 	const [updateMeetingDialogOpen, setUpdateMeetingDialogOpen] = useState(false);
 
 	const [RemoveConfirmation, confirmRemove] = useConfirm(
@@ -41,9 +41,26 @@ export const MeetingIdView = ({ meetingId }: Props) => {
 		"The following action will remove this meeting"
 	);
 
-	const { data } = useSuspenseQuery(
-		trpc.meetings.getOne.queryOptions({ id: meetingId })
-	);
+	let data, error;
+	try {
+		// Use suspense query but with error boundary
+		const result = useSuspenseQuery(
+			trpc.meetings.getOne.queryOptions({ id: meetingId })
+		);
+		data = result.data;
+	} catch (err) {
+		error = err;
+	}
+
+	// Handle error state
+	if (error) {
+		return <MeetingIdViewError />;
+	}
+
+	// Handle missing data
+	if (!data) {
+		return <MeetingIdViewLoading />;
+	}
 
 	const removeMeeting = useMutation(
 		trpc.meetings.remove.mutationOptions({

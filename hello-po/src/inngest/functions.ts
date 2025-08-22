@@ -9,25 +9,16 @@ import { createAgent, openai, TextMessage } from "@inngest/agent-kit";
 const summarizer = createAgent({
   name: "summarizer",
   system: `
-  You are an expert summarizer. You write readable, concise, simple content. You are given a transcript of a meeting and you need to summarize it.
+  You are an expert meeting summarizer. Create a clear, comprehensive summary of the meeting.
 
-Use the following markdown structure for every output:
+  Write a well-structured summary in 3-4 paragraphs covering:
+  1. Overview of what was discussed
+  2. Key decisions and outcomes  
+  3. Action items and next steps
+  4. Important highlights or concerns
 
-### Overview
-Provide a detailed, engaging summary of the session's content. Focus on major features, user workflows, and any key takeaways. Write in a narrative style, using full sentences. Highlight unique or powerful aspects of the product, platform, or discussion.
-
-### Notes
-Break down key content into thematic sections with timestamp ranges. Each section should summarize key points, actions, or demos in bullet format.
-
-Example:
-#### Section Name
-- Main point or demo shown here
-- Another key insight or interaction
-- Follow-up tool or explanation provided
-
-#### Next Section
-- Feature X automatically does Y
-- Mention of integration with Z
+  Write in a professional, easy-to-read style. Use complete sentences and natural language. 
+  Do not use markdown formatting, bullet points, or headers - just flowing paragraph text.
 `.trim(),
 model: openai({ model: "gpt-4o", apiKey: process.env.OPENAI_API_KEY }),
 })

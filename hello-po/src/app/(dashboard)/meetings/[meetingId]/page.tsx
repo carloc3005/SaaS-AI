@@ -30,10 +30,16 @@ const Page = async ({ params }: Props) => {
     }
 
     const queryClient = getQueryClient();
-    void queryClient.prefetchQuery(
-        trpc.meetings.getOne.queryOptions({ id: meetingId }),
-    );
-    // TODO: Prefetch `meeting.getTranscript`
+    
+    // Try to prefetch the query, but don't fail if it errors
+    try {
+        void queryClient.prefetchQuery(
+            trpc.meetings.getOne.queryOptions({ id: meetingId }),
+        );
+    } catch (error) {
+        // Log the error but continue rendering
+        console.warn("Failed to prefetch meeting data:", error);
+    }
 
     return (
         <HydrationBoundary state={dehydrate(queryClient)}>
