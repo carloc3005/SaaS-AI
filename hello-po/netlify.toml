@@ -1,6 +1,6 @@
 [build]
   command = "npm run build"
-  publish = ".next"
+  # Don't specify publish directory - let the Next.js plugin handle it
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
@@ -8,16 +8,7 @@
 [build.environment]
   NODE_VERSION = "18"
 
-# Redirect all server-side requests to Next.js
-[[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/nextjs/:splat"
-  status = 200
-
-[[redirects]]
-  from = "/*"
-  to = "/.netlify/functions/nextjs/:splat"
-  status = 200
+# Remove redirects - the Next.js plugin handles routing automatically
 
 # Headers for security
 [[headers]]

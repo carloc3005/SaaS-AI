@@ -5,6 +5,35 @@ import * as RechartsPrimitive from "recharts"
 
 import { cn } from "@/lib/utils"
 
+// Chart tooltip props interface
+interface ChartTooltipProps {
+  active?: boolean
+  payload?: Array<{
+    dataKey?: string
+    name?: string
+    value?: any
+    color?: string
+    fill?: string
+    stroke?: string
+    strokeDasharray?: string
+    [key: string]: any
+  }>
+  label?: any
+  [key: string]: any
+}
+
+// Chart legend props interface  
+interface ChartLegendProps {
+  payload?: Array<{
+    value?: string
+    dataKey?: string
+    color?: string
+    [key: string]: any
+  }>
+  verticalAlign?: "top" | "bottom" | "middle"
+  [key: string]: any
+}
+
 // Format: { THEME_NAME: CSS_SELECTOR }
 const THEMES = { light: "", dark: ".dark" } as const
 
@@ -118,7 +147,7 @@ function ChartTooltipContent({
   color,
   nameKey,
   labelKey,
-}: React.ComponentProps<typeof RechartsPrimitive.Tooltip> &
+}: ChartTooltipProps &
   React.ComponentProps<"div"> & {
     hideLabel?: boolean
     hideIndicator?: boolean
@@ -179,7 +208,7 @@ function ChartTooltipContent({
     >
       {!nestLabel ? tooltipLabel : null}
       <div className="grid gap-1.5">
-        {payload.map((item, index) => {
+        {payload?.map((item: any, index: number) => {
           const key = `${nameKey || item.name || item.dataKey || "value"}`
           const itemConfig = getPayloadConfigFromPayload(config, item, key)
           const indicatorColor = color || item.payload.fill || item.color
@@ -257,7 +286,7 @@ function ChartLegendContent({
   verticalAlign = "bottom",
   nameKey,
 }: React.ComponentProps<"div"> &
-  Pick<RechartsPrimitive.LegendProps, "payload" | "verticalAlign"> & {
+  ChartLegendProps & {
     hideIcon?: boolean
     nameKey?: string
   }) {
@@ -275,7 +304,7 @@ function ChartLegendContent({
         className
       )}
     >
-      {payload.map((item) => {
+      {payload?.map((item: any) => {
         const key = `${nameKey || item.dataKey || "value"}`
         const itemConfig = getPayloadConfigFromPayload(config, item, key)
 

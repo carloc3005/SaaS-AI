@@ -2,6 +2,7 @@
 
 import { ErrorState } from "@/components/error-state";
 import { LoadingState } from "@/components/loading-state";
+import { Button } from "@/components/ui/button";
 import { useTRPC } from "@/trpc/client";
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { MeetingIdViewHeader } from "../components/meeting-id-header";
@@ -35,6 +36,7 @@ export const MeetingIdView = ({ meetingId }: Props) => {
 	const router = useRouter();
 
 	const [updateMeetingDialogOpen, setUpdateMeetingDialogOpen] = useState(false);
+	const [retryCount, setRetryCount] = useState(0);
 
 	const [RemoveConfirmation, confirmRemove] = useConfirm(
 		"Are you sure?",
@@ -44,9 +46,17 @@ export const MeetingIdView = ({ meetingId }: Props) => {
 	let data, error;
 	try {
 		// Use suspense query but with error boundary
-		const result = useSuspenseQuery(
-			trpc.meetings.getOne.queryOptions({ id: meetingId })
-		);
+		const result = useSuspenseQuery({
+			...trpc.meetings.getOne.queryOptions({ id: meetingId }),
+			retry: (failureCount: number, error: any) => {
+				// Retry up to 3 times if meeting is not found (might be recently created)
+				if (failureCount < 3 && error?.message?.includes('not found')) {
+					return true;
+				}
+				return false;
+			},
+			retryDelay: (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 3000),
+		});
 		data = result.data;
 	} catch (err) {
 		error = err;
@@ -126,10 +136,29 @@ export const MeetingIdViewLoading = () => {
 };
 
 export const MeetingIdViewError = () => {
+	const router = useRouter();
+	
 	return (
-		<ErrorState
-		title="Error Loading Meeting"
-		description="Please try again later" 
-		/>
+		<div className="flex h-screen items-center justify-center">
+			<div className="text-center space-y-4">
+				<ErrorState
+					title="Error Loading Meeting"
+					description="The meeting might be still processing or doesn't exist."
+				/>
+				<div className="flex gap-2 justify-center">
+					<Button 
+						variant="outline" 
+						onClick={() => window.location.reload()}
+					>
+						Refresh Page
+					</Button>
+					<Button 
+						onClick={() => router.push('/meetings')}
+					>
+						Back to Meetings
+					</Button>
+				</div>
+			</div>
+		</div>
 	);
 }

@@ -9,6 +9,7 @@ export async function POST(req: NextRequest) {
         const { meetingId } = await req.json();
         
         if (!meetingId) {
+            console.error("❌ No meeting ID provided");
             return NextResponse.json({ error: "Meeting ID is required" }, { status: 400 });
         }
         
@@ -21,8 +22,11 @@ export async function POST(req: NextRequest) {
             .where(eq(meetings.id, meetingId));
             
         if (!meeting) {
+            console.error("❌ Meeting not found in database:", meetingId);
             return NextResponse.json({ error: "Meeting not found" }, { status: 404 });
         }
+        
+        console.log("✅ Meeting found:", meeting.name, "Status:", meeting.status);
         
         // Get the agent for this meeting
         const [agent] = await db
@@ -31,8 +35,11 @@ export async function POST(req: NextRequest) {
             .where(eq(agents.id, meeting.agentId));
             
         if (!agent) {
+            console.error("❌ Agent not found for meeting:", meeting.agentId);
             return NextResponse.json({ error: "Agent not found" }, { status: 404 });
         }
+        
+        console.log("✅ Agent found:", agent.name, "ID:", agent.id);
         
         const call = streamVideo.video.call("default", meetingId);
         
@@ -68,11 +75,12 @@ export async function POST(req: NextRequest) {
             
             // Check if OpenAI API key is available
             if (!process.env.OPENAI_API_KEY) {
-                console.error("OPENAI_API_KEY environment variable is not set");
+                console.error("❌ OPENAI_API_KEY environment variable is not set");
                 return NextResponse.json({ error: "OpenAI API key not configured" }, { status: 500 });
             }
 
             console.log("🔗 Connecting OpenAI to call with agent:", agent.id, "name:", agent.name);
+            console.log("🔑 OpenAI API Key present:", process.env.OPENAI_API_KEY ? "✅ Yes" : "❌ No");
             
             const realtimeClient = await streamVideo.video.connectOpenAi({
                 call,
@@ -82,18 +90,23 @@ export async function POST(req: NextRequest) {
 
             console.log("✅ OpenAI client connected successfully!");
             
-            await realtimeClient.updateSession({
+            // Update session with agent configuration
+            const sessionUpdate = {
                 instructions: agent.instructions,
-                voice: "alloy",
-                input_audio_format: "pcm16",
-                output_audio_format: "pcm16",
+                voice: "alloy" as const,
+                input_audio_format: "pcm16" as const,
+                output_audio_format: "pcm16" as const,
                 turn_detection: {
-                    type: "server_vad",
+                    type: "server_vad" as const,
                     threshold: 0.5,
                     prefix_padding_ms: 300,
                     silence_duration_ms: 200
                 }
-            });
+            };
+            
+            console.log("🎛️ Updating session with config:", sessionUpdate);
+            
+            await realtimeClient.updateSession(sessionUpdate);
             
             console.log("🎉 SUCCESS! AI Agent is now in the call!");
             

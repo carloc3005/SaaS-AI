@@ -18,7 +18,10 @@ export const NewMeetingDialog = ({
         <ResponsiveDialog title="New Meeting" description="Create a new Meeting" open={open} onOpenChange={onOpenChange}>
             <MeetingForm onSucess={(id) => {
                 onOpenChange(false);
-                router.push(`/meetings/${id}`);
+                // Redirect directly to the call page so user can join immediately
+                setTimeout(() => {
+                    router.push(`/call/${id}`);
+                }, 500);
             }}
             onCancel={() => onOpenChange(false)}
             />
