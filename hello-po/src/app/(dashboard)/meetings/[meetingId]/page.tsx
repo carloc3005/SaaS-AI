@@ -16,6 +16,11 @@ interface Props {
 const Page = async ({ params }: Props) => {
     const { meetingId } = await params;
 
+    // Validate meetingId
+    if (!meetingId || meetingId === "undefined" || meetingId === "null") {
+        redirect("/meetings");
+    }
+
     const session = await auth.api.getSession({
         headers: await headers(),
     });

@@ -184,8 +184,16 @@ export const meetingsRouter = createTRPCRouter({
         }),
 
     getOne: protectedProcedure
-        .input(z.object({ id: z.string() }))
+        .input(z.object({ id: z.string().min(1, "Meeting ID is required") }))
         .query(async ({ input, ctx }) => {
+            // Prevent processing of "undefined" string
+            if (input.id === "undefined" || input.id === "null") {
+                throw new TRPCError({
+                    code: "BAD_REQUEST",
+                    message: "Invalid meeting ID"
+                });
+            }
+
             const [meeting] = await db
                 .select({
                     ...getTableColumns(meetings),

@@ -24,6 +24,16 @@ export const MeetingIdView = ({ meetingId }: Props) => {
 	const queryClient = useQueryClient();
 	const router = useRouter();
 
+	// Validate meetingId before making any queries
+	if (!meetingId || meetingId === "undefined" || meetingId === "null") {
+		return (
+			<ErrorState 
+				title="Invalid Meeting ID" 
+				description="The meeting ID is invalid or missing."
+			/>
+		);
+	}
+
 	const [updateMeetingDialogOpen, setUpdateMeetingDialogOpen] = useState(false);
 
 	const [RemoveConfirmation, confirmRemove] = useConfirm(

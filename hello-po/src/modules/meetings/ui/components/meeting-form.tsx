@@ -21,7 +21,7 @@ import { useState } from "react";
 const meetingCreateSchema = meetingsInsertedSchema;
 
 interface MeetingFormProps {
-    onSucess?: () => void;
+    onSucess?: (id?: string) => void;
     onCancel?: () => void;
     initialValues?: MeetingGetOne;
 }
@@ -50,7 +50,7 @@ export const MeetingForm = ({
                 }
 
                 toast.success("Meeting created successfully!");
-                onSucess?.();
+                onSucess?.(data.id);
             },
             onError: (error) => {
                 toast.error(error.message);
@@ -60,7 +60,7 @@ export const MeetingForm = ({
 
     const updateMeeting = useMutation(
         trpc.meetings.update.mutationOptions({
-            onSuccess: () => {
+            onSuccess: (data) => {
                 // Invalidate all meetings queries
                 queryClient.invalidateQueries(
                     trpc.meetings.getMany.queryOptions({})
@@ -71,7 +71,7 @@ export const MeetingForm = ({
                         trpc.meetings.getOne.queryOptions({ id: initialValues.id }),
                     )
                 }
-                onSucess?.();
+                onSucess?.(data.id);
             },
             onError: (error) => {
                 toast.error(error.message);

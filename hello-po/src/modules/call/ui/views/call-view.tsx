@@ -15,6 +15,19 @@ export const CallView = ({
 	meetingId
 }: Props) => {
 	const trpc = useTRPC();
+
+	// Validate meetingId before making any queries
+	if (!meetingId || meetingId === "undefined" || meetingId === "null") {
+		return (
+			<div className="flex h-screen items-center justify-center">
+				<ErrorState 
+					title="Invalid Meeting ID" 
+					description="The meeting ID is invalid or missing."
+				/>
+			</div>
+		);
+	}
+
 	const { data } = useSuspenseQuery(trpc.meetings.getOne.queryOptions({ id: meetingId }));
 	const [pinVerified, setPinVerified] = useState(false);
 
