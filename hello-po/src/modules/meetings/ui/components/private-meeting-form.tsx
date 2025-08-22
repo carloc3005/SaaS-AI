@@ -37,14 +37,6 @@ export const PrivateMeetingForm = ({
 
                 toast.success("Private meeting created successfully!");
                 
-                // Show PIN for private meetings
-                if (data.isPrivate && data.pin) {
-                    toast.success(`Meeting PIN: ${data.pin}`, {
-                        description: "Save this PIN - participants will need it to join the meeting.",
-                        duration: 10000,
-                    });
-                }
-                
                 onSuccess?.(data);
             },
             onError: (error) => {

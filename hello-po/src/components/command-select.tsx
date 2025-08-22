@@ -36,6 +36,11 @@ export const CommandSelect = ({
 }: Props) => {
     const [open, setOpen] = useState(false);
     const [search, setSearch] = useState("");
+    const [selectedOptionCache, setSelectedOptionCache] = useState<{
+        id: string;
+        value: string;
+        children: ReactNode;
+    } | null>(null);
 
     const handleOpenChange = (open: boolean) => {
         setSearch("");
@@ -57,18 +62,34 @@ export const CommandSelect = ({
 
     // Use search results if available, otherwise fall back to static options
     const options = processedResults || staticOptions || [];
-    const selectedOption = options.find((option) => option.value === value);
+    
+    // Try to find selected option from current options first, then from cache
+    const selectedOption = options.find((option) => option.value === value) || 
+                          (selectedOptionCache?.value === value ? selectedOptionCache : null);
+
+    // Cache the selected option when found in current options
+    if (options.length > 0) {
+        const foundOption = options.find((option) => option.value === value);
+        if (foundOption && foundOption.value === value) {
+            setSelectedOptionCache(foundOption);
+        }
+    }
+
+    // Display option: prefer from current options, fallback to static options, then cache
+    const displayOption = options.find((option) => option.value === value) || 
+                          (staticOptions?.find((option) => option.value === value)) ||
+                          (selectedOptionCache?.value === value ? selectedOptionCache : null);
 
     return (
         <>
             <Button 
                 type="button" 
                 variant="outline" 
-                className={cn("h-9 justify-between font-normal px-2", !selectedOption && "text-muted-foreground", className,)}
+                className={cn("h-9 justify-between font-normal px-2", !displayOption && "text-muted-foreground", className,)}
                 onClick={() => setOpen(true)}
             >
                 <div>
-                    {selectedOption?.children ?? placeholder}
+                    {displayOption?.children ?? placeholder}
                 </div>
                 <ChevronsUpDownIcon />
             </Button>
@@ -81,7 +102,11 @@ export const CommandSelect = ({
                         </span>
                     </CommandEmpty>
                     {options.map((option) => (
-                        <CommandItem key={option.id} onSelect={() => {onSelect(option.value); setOpen(false);}}>
+                        <CommandItem key={option.id} onSelect={() => {
+                            setSelectedOptionCache(option);
+                            onSelect(option.value); 
+                            setOpen(false);
+                        }}>
                             {option.children}
                         </CommandItem>
                     ))}

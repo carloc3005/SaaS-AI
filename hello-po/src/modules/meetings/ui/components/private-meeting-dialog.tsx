@@ -38,7 +38,7 @@ export const PrivateMeetingDialog = ({ open, onOpenChange }: PrivateMeetingDialo
         setCopiedLink(true);
         setTimeout(() => setCopiedLink(false), 2000);
       }
-      toast.success(`${type === 'pin' ? 'PIN' : 'Link'} copied to clipboard!`);
+      toast.success(`${type === 'pin' ? 'PIN' : 'Meeting link'} copied to clipboard!`);
     } catch (err) {
       toast.error('Failed to copy to clipboard');
     }
@@ -48,7 +48,7 @@ export const PrivateMeetingDialog = ({ open, onOpenChange }: PrivateMeetingDialo
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg">
         {!createdMeeting ? (
           <>
             <DialogHeader>
@@ -67,79 +67,88 @@ export const PrivateMeetingDialog = ({ open, onOpenChange }: PrivateMeetingDialo
           </>
         ) : (
           <>
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <CheckCircle className="h-5 w-5 text-green-600" />
+            <DialogHeader className="text-center">
+              <DialogTitle className="flex items-center justify-center gap-2 text-xl">
+                <CheckCircle className="h-6 w-6 text-green-600" />
                 Private Meeting Created!
               </DialogTitle>
-              <DialogDescription>
-                Your private meeting has been created successfully. Share the details below with participants.
+              <DialogDescription className="text-center">
+                Your secure meeting room is ready. Share these details with participants.
               </DialogDescription>
             </DialogHeader>
             
-            <div className="space-y-4">
-              {/* Meeting Details */}
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-lg">{createdMeeting.name}</CardTitle>
-                  <CardDescription className="flex items-center gap-2">
-                    <Lock className="h-4 w-4" />
-                    Private Meeting
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {/* PIN */}
-                  {createdMeeting.pin && (
-                    <div>
-                      <label className="text-sm font-medium text-gray-700">Meeting PIN</label>
-                      <div className="flex items-center gap-2 mt-1">
-                        <div className="bg-purple-50 border border-purple-200 rounded-lg px-4 py-3 font-mono text-xl font-bold text-purple-900 tracking-widest flex-1 text-center">
-                          {createdMeeting.pin}
-                        </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => copyToClipboard(createdMeeting.pin, 'pin')}
-                          className="shrink-0"
-                        >
-                          {copiedPin ? <CheckCircle className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                        </Button>
-                      </div>
-                      <p className="text-xs text-gray-500 mt-1">
-                        Participants will need this PIN to join the meeting
-                      </p>
+            <div className="space-y-6">
+              {/* Meeting Name */}
+              <div className="text-center">
+                <h3 className="text-lg font-semibold text-gray-900">{createdMeeting.name}</h3>
+                <div className="flex items-center justify-center gap-2 text-sm text-gray-600 mt-1">
+                  <Lock className="h-4 w-4" />
+                  Private Meeting
+                </div>
+              </div>
+
+              {/* PIN - Centered and Prominent */}
+              {createdMeeting.pin && (
+                <div className="text-center py-6">
+                  <label className="text-sm font-medium text-gray-700 block mb-3">Meeting PIN</label>
+                  <div className="bg-gradient-to-br from-purple-50 to-purple-100 border-2 border-purple-200 rounded-2xl p-8 mb-4">
+                    <div className="text-4xl font-bold text-purple-900 tracking-[0.5em] font-mono mb-2">
+                      {createdMeeting.pin}
                     </div>
-                  )}
-                  
-                  {/* Meeting Link */}
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">Meeting Link</label>
-                    <div className="flex items-center gap-2 mt-1">
-                      <div className="bg-gray-50 border rounded-lg px-3 py-2 text-sm font-mono flex-1 truncate">
-                        {meetingUrl}
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => copyToClipboard(meetingUrl, 'link')}
-                        className="shrink-0"
-                      >
-                        {copiedLink ? <CheckCircle className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                      </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => copyToClipboard(createdMeeting.pin, 'pin')}
+                      className="mt-4 border-purple-300 text-purple-700 hover:bg-purple-50"
+                    >
+                      {copiedPin ? (
+                        <>
+                          <CheckCircle className="h-4 w-4 mr-2" />
+                          Copied!
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="h-4 w-4 mr-2" />
+                          Copy PIN
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                  <p className="text-sm text-gray-500">
+                    Participants need this PIN to join the meeting
+                  </p>
+                </div>
+              )}
+              
+              {/* Meeting Link */}
+              <Card className="border-gray-200">
+                <CardContent className="p-4">
+                  <label className="text-sm font-medium text-gray-700 block mb-2">Meeting Link</label>
+                  <div className="flex items-center gap-2">
+                    <div className="bg-gray-50 border rounded-lg px-3 py-2 text-sm font-mono flex-1 truncate text-gray-700">
+                      {meetingUrl}
                     </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => copyToClipboard(meetingUrl, 'link')}
+                      className="shrink-0"
+                    >
+                      {copiedLink ? <CheckCircle className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
 
               {/* Actions */}
-              <div className="flex gap-2">
+              <div className="flex gap-3 pt-4">
                 <Button
                   onClick={() => window.open(meetingUrl, '_blank')}
-                  className="flex-1 bg-purple-600 hover:bg-purple-700"
+                  className="flex-1 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white"
                 >
                   Join Meeting Now
                 </Button>
-                <Button variant="outline" onClick={handleClose}>
+                <Button variant="outline" onClick={handleClose} className="px-6">
                   Done
                 </Button>
               </div>
