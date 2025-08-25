@@ -3,7 +3,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { OctagonAlert, OctagonAlertIcon } from "lucide-react";
+import { OctagonAlert, OctagonAlertIcon, CheckCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -12,6 +12,7 @@ import { useForm } from "react-hook-form";
 import Link from "next/link";
 import { authClient } from "@/lib/auth-client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
     email: z.string().email(),
@@ -22,7 +23,9 @@ const formSchema = z.object({
 export const SignInView = () => {
 
     const [error, setError] = useState<string | null>(null);
+    const [success, setSuccess] = useState<string | null>(null);
     const [pending, setPending] = useState(false);
+    const router = useRouter();
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -34,6 +37,7 @@ export const SignInView = () => {
 
     const onSubmit = (data: z.infer<typeof formSchema>) => {
         setError(null);
+        setSuccess(null);
         setPending(true);
 
         authClient.signIn.email({
@@ -45,10 +49,21 @@ export const SignInView = () => {
             {
                 onSuccess: () => {
                     setPending(false);
+                    setSuccess("Signed in successfully! Redirecting...");
+                    setTimeout(() => {
+                        router.push("/");
+                    }, 1000);
                 },
                 onError: ({ error }) => {
                     setPending(false);
-                    setError(error.message)
+                    // Better error messages
+                    if (error.message.includes("Invalid credentials") || error.message.includes("incorrect")) {
+                        setError("Invalid email or password. Please check your credentials and try again.");
+                    } else if (error.message.includes("User not found")) {
+                        setError("No account found with this email. Please sign up first.");
+                    } else {
+                        setError(error.message);
+                    }
                 },
             }
         );
@@ -57,6 +72,7 @@ export const SignInView = () => {
 
     const onSocial = (provider: "github" | "google" | "discord" | "spotify") => {
         setError(null);
+        setSuccess(null);
         setPending(true);
 
         authClient.signIn.social({
@@ -65,11 +81,12 @@ export const SignInView = () => {
         },
             {
                 onSuccess: () => {
-                    setPending(false)
+                    setPending(false);
+                    setSuccess("Signing in with " + provider + "...");
                 },
                 onError: ({ error }) => {
                     setPending(false);
-                    setError(error.message)
+                    setError(error.message);
                 },
             }
         );
@@ -124,9 +141,25 @@ export const SignInView = () => {
                                             <AlertTitle>{error}</AlertTitle>
                                         </Alert>
                                     )}
+                                    {!!success && (
+                                        <Alert className="bg-green-50 border-green-200 border-none">
+                                            <CheckCircle className="h-4 w-4 !text-green-600" />
+                                            <AlertTitle className="text-green-800">{success}</AlertTitle>
+                                        </Alert>
+                                    )}
                                     <Button disabled={pending} type="submit" className="w-full">
-                                        Sign In
+                                        {pending ? "Signing in..." : "Sign In"}
                                     </Button>
+                                    {error && error.includes("No account found") && (
+                                        <Button 
+                                            type="button" 
+                                            variant="outline" 
+                                            className="w-full" 
+                                            onClick={() => router.push("/sign-up")}
+                                        >
+                                            Create New Account
+                                        </Button>
+                                    )}
                                     <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
                                         <span className="relative z-10 bg-background px-2 text-muted-foreground">
                                             or
