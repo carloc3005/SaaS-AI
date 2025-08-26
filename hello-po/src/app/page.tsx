@@ -4,13 +4,20 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 
 export default async function RootPage() {
-  const session = await auth.api.getSession({ 
-    headers: await headers(),
-  });
+  try {
+    const session = await auth.api.getSession({ 
+      headers: await headers(),
+    });
 
-  if (!session) {
+    console.log('Session check on root page:', session ? 'Session found' : 'No session');
+
+    if (!session) {
+      redirect("/sign-in");
+    }
+
+    return <Homeview />;
+  } catch (error) {
+    console.error('Error checking session on root page:', error);
     redirect("/sign-in");
   }
-
-  return <Homeview />;
 }

@@ -11,7 +11,7 @@ import { Alert, AlertTitle } from "@/components/ui/alert";
 import { useForm } from "react-hook-form";
 import Link from "next/link";
 import { authClient } from "@/lib/auth-client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
@@ -27,6 +27,24 @@ export const SignInView = () => {
     const [pending, setPending] = useState(false);
     const router = useRouter();
 
+    // Check if user is already authenticated
+    useEffect(() => {
+        const checkAuth = async () => {
+            try {
+                const session = await authClient.getSession();
+                if (session) {
+                    // User is already logged in, redirect to home
+                    router.push("/");
+                }
+            } catch (error) {
+                // User is not logged in, that's fine
+                console.log("No active session found");
+            }
+        };
+        
+        checkAuth();
+    }, [router]);
+
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -35,64 +53,59 @@ export const SignInView = () => {
         },
     });
 
-    const onSubmit = (data: z.infer<typeof formSchema>) => {
+    const onSubmit = async (data: z.infer<typeof formSchema>) => {
         setError(null);
         setSuccess(null);
         setPending(true);
 
-        authClient.signIn.email({
-            email: data.email,
-            password: data.password,
-        },
-            {
-                onSuccess: () => {
-                    setPending(false);
-                    setSuccess("Signed in successfully! Redirecting...");
-                    // Use window.location.href for more reliable redirect
-                    setTimeout(() => {
-                        window.location.href = "/";
-                    }, 1500);
-                },
-                onError: ({ error }) => {
-                    setPending(false);
-                    // Better error messages
-                    if (error.message.includes("Invalid credentials") || error.message.includes("incorrect")) {
-                        setError("Invalid email or password. Please check your credentials and try again.");
-                    } else if (error.message.includes("User not found")) {
-                        setError("No account found with this email. Please sign up first.");
-                    } else {
-                        setError(error.message);
-                    }
-                },
-            }
-        );
+        try {
+            const result = await authClient.signIn.email({
+                email: data.email,
+                password: data.password,
+            });
 
+            if (result.data) {
+                console.log('Login successful:', result.data);
+                setPending(false);
+                setSuccess("Signed in successfully! Redirecting...");
+                
+                // Force a page reload to ensure session is properly established
+                setTimeout(() => {
+                    window.location.href = "/";
+                }, 1000);
+            }
+        } catch (error: any) {
+            console.error('Login error:', error);
+            setPending(false);
+            
+            // Better error messages
+            if (error.message?.includes("Invalid credentials") || error.message?.includes("incorrect")) {
+                setError("Invalid email or password. Please check your credentials and try again.");
+            } else if (error.message?.includes("User not found")) {
+                setError("No account found with this email. Please sign up first.");
+            } else {
+                setError(error.message || "An error occurred during sign in. Please try again.");
+            }
+        }
     };
 
-    const onSocial = (provider: "google" | "discord") => {
+    const onSocial = async (provider: "google" | "discord") => {
         setError(null);
         setSuccess(null);
         setPending(true);
 
-        authClient.signIn.social({
-            provider: provider,
-            callbackURL: "/",
-        },
-            {
-                onSuccess: () => {
-                    setPending(false);
-                    setSuccess("Signing in with " + provider + "...");
-                    // Use window.location.href for more reliable redirect
-                    setTimeout(() => {
-                        window.location.href = "/";
-                    }, 1500);
-                },
-                onError: ({ error }) => {
-                    setPending(false);
-                    setError(error.message);
-                },
-            }
-        );
+        try {
+            await authClient.signIn.social({
+                provider: provider,
+                callbackURL: "/",
+            });
+            
+            // Social login usually redirects automatically
+            setSuccess("Redirecting to " + provider + "...");
+        } catch (error: any) {
+            setPending(false);
+            setError(error.message || "An error occurred during social sign in.");
+        }
     };
 
     return (
