@@ -27,40 +27,8 @@ export const SignInView = () => {
     const [pending, setPending] = useState(false);
     const router = useRouter();
 
-    // Check if user is already authenticated - ONLY ONCE on mount
-    useEffect(() => {
-        let isMounted = true;
-        let timeoutId: NodeJS.Timeout;
-        
-        // Debounce the auth check to prevent multiple rapid calls
-        const debouncedAuthCheck = () => {
-            clearTimeout(timeoutId);
-            timeoutId = setTimeout(async () => {
-                if (!isMounted) return;
-                
-                try {
-                    console.log("Checking auth status on sign-in page...");
-                    const session = await authClient.getSession();
-                    console.log("Sign-in page session result:", session);
-                    
-                    if (session?.data?.user && isMounted) {
-                        console.log("User is authenticated, redirecting...");
-                        router.replace("/"); // Use replace instead of push
-                    }
-                } catch (error) {
-                    console.log("No active session found:", error);
-                }
-            }, 500); // 500ms debounce
-        };
-        
-        // Only check auth once on mount
-        debouncedAuthCheck();
-        
-        return () => {
-            isMounted = false;
-            clearTimeout(timeoutId);
-        };
-    }, []); // No dependencies to prevent re-runs
+    // Removed auto auth check to prevent session conflicts
+    // The server-side check in the page component handles this
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -85,28 +53,11 @@ export const SignInView = () => {
                 console.log('Login successful:', result.data);
                 setSuccess("Signed in successfully! Redirecting...");
                 
-                // Wait for session to be established, then redirect
-                setTimeout(async () => {
-                    try {
-                        console.log("Verifying session after login...");
-                        const session = await authClient.getSession();
-                        console.log("Post-login session check:", session);
-                        
-                        if (session?.data?.user) {
-                            console.log("Session verified, redirecting to home...");
-                            // Use window.location for reliable redirect
-                            window.location.href = "/";
-                        } else {
-                            console.log("Session not found, reloading page...");
-                            window.location.reload();
-                        }
-                    } catch (err) {
-                        console.error("Error verifying session after login:", err);
-                        window.location.reload();
-                    } finally {
-                        setPending(false);
-                    }
-                }, 1000); // Give more time for session to establish
+                // Don't check session immediately, just redirect
+                setTimeout(() => {
+                    console.log("Redirecting after successful login...");
+                    window.location.href = "/";
+                }, 1500); // Give time for success message to show
             }
         } catch (error: any) {
             console.error('Login error:', error);

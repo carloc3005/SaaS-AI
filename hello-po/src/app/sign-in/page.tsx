@@ -9,12 +9,14 @@ const SignInPage = async () => {
       headers: await headers(),
     });
 
+    // Check if session has user data
     if (session?.user) {
+      console.log("User already authenticated, redirecting to home");
       redirect("/")
     }
   } catch (error) {
     // If there's an error getting the session, just continue to show sign-in
-    console.log("Error checking session on sign-in page:", error);
+    console.log("No active session, showing sign-in page");
   }
 
   return <SignInView />;
