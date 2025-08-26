@@ -16,6 +16,10 @@ export const auth = betterAuth({
         enabled: true,
         requireEmailVerification: false, // Disable email verification for now
     },
+    session: {
+        expiresIn: 60 * 60 * 24 * 7, // 7 days
+        updateAge: 60 * 60 * 24, // 1 day
+    },
     socialProviders: {
         google: {
             clientId: process.env.GOOGLE_CLIENT_ID as string,

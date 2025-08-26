@@ -43,16 +43,15 @@ export const SignInView = () => {
         authClient.signIn.email({
             email: data.email,
             password: data.password,
-
-            callbackURL: "/"
         },
             {
                 onSuccess: () => {
                     setPending(false);
                     setSuccess("Signed in successfully! Redirecting...");
+                    // Use window.location.href for more reliable redirect
                     setTimeout(() => {
-                        router.push("/");
-                    }, 1000);
+                        window.location.href = "/";
+                    }, 1500);
                 },
                 onError: ({ error }) => {
                     setPending(false);
@@ -83,6 +82,10 @@ export const SignInView = () => {
                 onSuccess: () => {
                     setPending(false);
                     setSuccess("Signing in with " + provider + "...");
+                    // Use window.location.href for more reliable redirect
+                    setTimeout(() => {
+                        window.location.href = "/";
+                    }, 1500);
                 },
                 onError: ({ error }) => {
                     setPending(false);
