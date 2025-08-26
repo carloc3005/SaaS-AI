@@ -9,15 +9,15 @@ export default async function RootPage() {
       headers: await headers(),
     });
 
-    console.log('Root page session check:', session);
+    console.log('Root page session check:', !!session?.user);
 
-    // Check if session has user data
-    if (!session?.user) {
-      console.log("No session found, redirecting to sign-in");
+    // Check if session has user data with more lenient check
+    if (!session?.user?.id) {
+      console.log("No valid session found, redirecting to sign-in");
       redirect("/sign-in");
     }
 
-    console.log("Session found, showing home page");
+    console.log("Valid session found, showing home page for user:", session.user.email);
     return <Homeview />;
   } catch (error) {
     console.error('Error checking session on root page:', error);

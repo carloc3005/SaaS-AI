@@ -23,12 +23,27 @@ export function middleware(request: NextRequest) {
     return response;
   }
 
-  return NextResponse.next();
+  // Ensure cookies are properly handled for authentication
+  const response = NextResponse.next();
+  
+  // Add secure cookie settings for auth routes
+  if (pathname.startsWith('/sign-in') || pathname.startsWith('/sign-up') || pathname === '/') {
+    response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+    response.headers.set('Pragma', 'no-cache');
+    response.headers.set('Expires', '0');
+  }
+
+  return response;
 }
 
 export const config = {
   matcher: [
     // Match all API routes
     '/api/:path*',
+    // Match authentication pages and home page
+    '/',
+    '/sign-in',
+    '/sign-up',
+    '/dashboard/:path*',
   ],
 };

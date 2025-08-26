@@ -55,13 +55,12 @@ export const SignInView = () => {
             if (result.data && !result.error) {
                 console.log('Login successful:', result.data);
                 setSuccess("Signed in successfully! Redirecting...");
-                setPending(false);
                 
-                // Immediate redirect after successful login
-                setTimeout(() => {
-                    console.log("Redirecting after successful login...");
-                    window.location.href = "/";
-                }, 800);
+                // Wait a bit longer for session to be established, then redirect
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // Force a hard refresh to ensure session is properly loaded
+                window.location.href = "/";
             } else if (result.error) {
                 console.error('Login failed:', result.error);
                 setPending(false);
@@ -93,21 +92,10 @@ export const SignInView = () => {
                 callbackURL: "/",
             });
             
-            // Social login usually redirects automatically, but let's ensure it works
+            // Social login usually redirects automatically
             setSuccess("Redirecting to " + provider + "...");
             
-            // If the social login doesn't auto-redirect, handle it manually
-            if (result.data) {
-                setTimeout(() => {
-                    router.push("/");
-                    // Fallback
-                    setTimeout(() => {
-                        if (window.location.pathname === "/sign-in") {
-                            window.location.href = "/";
-                        }
-                    }, 500);
-                }, 500);
-            }
+            // Social providers handle their own redirects, no need for manual handling
         } catch (error: any) {
             setPending(false);
             setError(error.message || "An error occurred during social sign in.");
