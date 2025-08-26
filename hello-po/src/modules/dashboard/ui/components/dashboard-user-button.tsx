@@ -2,7 +2,7 @@ import { GeneratedAvatar } from "@/components/generated-avatar";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { authClient } from "@/lib/auth-client";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { ChevronDownIcon, CreditCardIcon, LogOut, LogOutIcon, Settings, User } from "lucide-react";
+import { ChevronDownIcon, LogOut, LogOutIcon, Settings, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Drawer, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -115,10 +115,6 @@ export const DashboardUserButton = () => {
                             <Settings className="size-4 text-black" /> 
                             Settings
                         </Button>
-                        <Button variant="outline" onClick={() => { }}>
-                            <CreditCardIcon className="size-4 text-black" /> 
-                            Billing
-                        </Button>
                         <Button variant="outline" onClick={onLogout} disabled={isLoggingOut}>
                             <LogOutIcon className="size-4 text-black" />
                             {isLoggingOut ? "Logging out..." : "Logout"}
@@ -167,10 +163,6 @@ export const DashboardUserButton = () => {
                 <DropdownMenuItem onClick={() => router.push("/settings")} className="cursor-pointer flex items-center justify-between">
                     Settings
                     <Settings className="size-4" />
-                </DropdownMenuItem>
-                <DropdownMenuItem className="cursor-pointer flex items-center justify-between">
-                    Billing
-                    <CreditCardIcon className="size-4" />
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={onLogout} className="cursor-pointer flex items-center justify-between" disabled={isLoggingOut}>
                     {isLoggingOut ? "Logging out..." : "Logout"}
