@@ -14,6 +14,7 @@ export const auth = betterAuth({
     }),
     emailAndPassword: {
         enabled: true,
+        requireEmailVerification: false, // Disable email verification for now
     },
     socialProviders: {
         google: {
@@ -30,7 +31,7 @@ export const auth = betterAuth({
         crossSubDomainCookies: {
             enabled: true,
         },
-        generateId: false,
+        // Remove generateId: false as it can cause issues
     },
     trustedOrigins: [
         process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000",
