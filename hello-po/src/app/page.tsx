@@ -4,6 +4,10 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 
 export default async function RootPage() {
+  console.log("Root page server component loaded");
+  
+  // TEMPORARILY DISABLE ROOT PAGE AUTH CHECK FOR DEBUGGING
+  /*
   try {
     const session = await auth.api.getSession({ 
       headers: await headers(),
@@ -20,4 +24,7 @@ export default async function RootPage() {
     console.error('Error checking session on root page:', error);
     redirect("/sign-in");
   }
+  */
+  
+  return <Homeview />;
 }

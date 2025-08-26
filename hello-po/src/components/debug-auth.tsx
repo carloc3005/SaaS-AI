@@ -33,7 +33,8 @@ export const DebugAuth = () => {
   }, []);
 
   if (process.env.NODE_ENV === 'production') {
-    return null; // Don't show debug info in production
+    // TEMPORARILY SHOW DEBUG INFO IN PRODUCTION
+    // return null;
   }
 
   return (

@@ -13,6 +13,7 @@ import Link from "next/link";
 import { authClient } from "@/lib/auth-client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { DebugAuth } from "@/components/debug-auth";
 
 const formSchema = z.object({
     email: z.string().email(),
@@ -33,10 +34,12 @@ export const SignInView = () => {
         
         const checkAuth = async () => {
             try {
+                console.log("Starting auth check on sign-in page...");
                 const session = await authClient.getSession();
                 console.log("Initial session check on sign-in page:", session);
                 
                 if (session?.data?.user && isMounted) {
+                    console.log("User is authenticated, redirecting to home...");
                     // User is already logged in, redirect to home
                     router.push("/");
                 }
@@ -46,7 +49,9 @@ export const SignInView = () => {
             }
         };
         
-        checkAuth();
+        // TEMPORARILY DISABLE AUTO AUTH CHECK
+        // checkAuth();
+        console.log("Auto auth check disabled for debugging");
         
         return () => {
             isMounted = false;
@@ -261,6 +266,7 @@ export const SignInView = () => {
                         Privacy Policy
                     </Link>
                 </div>
+                <DebugAuth />
             </div>
         );
 }

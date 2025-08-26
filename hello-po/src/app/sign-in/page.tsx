@@ -4,6 +4,10 @@ import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 
 const SignInPage = async () => {
+  // TEMPORARILY DISABLE SERVER-SIDE AUTH CHECK FOR DEBUGGING
+  console.log("Sign-in page server component loaded");
+  
+  /*
   try {
     const session = await auth.api.getSession({
       headers: await headers(),
@@ -16,6 +20,7 @@ const SignInPage = async () => {
     // If there's an error getting the session, just continue to show sign-in
     console.log("Error checking session on sign-in page:", error);
   }
+  */
 
   return <SignInView />;
 };
