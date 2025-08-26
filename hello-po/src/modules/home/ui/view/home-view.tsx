@@ -22,12 +22,60 @@ import {
   RocketIcon
 } from "lucide-react";
 import Link from "next/link";
+import { authClient } from "@/lib/auth-client";
+import { useRouter } from "next/navigation";
 
 export const Homeview = () => {
   const [currentTime, setCurrentTime] = useState<string>("");
   const [currentDate, setCurrentDate] = useState<string>("");
   const [timeZones, setTimeZones] = useState<Array<{name: string, time: string, zone: string}>>([]);
   const [isClient, setIsClient] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [sessionLoading, setSessionLoading] = useState(true);
+  const router = useRouter();
+
+  // Verify authentication on component mount
+  useEffect(() => {
+    const verifyAuth = async () => {
+      try {
+        const session = await authClient.getSession();
+        console.log("Home page session check:", session);
+        
+        if (session?.data?.user) {
+          setUser(session.data.user);
+        } else {
+          // No valid session, redirect to sign-in
+          router.push("/sign-in");
+          return;
+        }
+      } catch (error) {
+        console.error("Auth verification failed on home page:", error);
+        router.push("/sign-in");
+        return;
+      } finally {
+        setSessionLoading(false);
+      }
+    };
+
+    verifyAuth();
+  }, [router]);
+
+  // Show loading state while verifying authentication
+  if (sessionLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin h-8 w-8 border-b-2 border-gray-900 rounded-full mx-auto mb-4"></div>
+          <p>Verifying authentication...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render the home content if user is not authenticated
+  if (!user) {
+    return null;
+  }
 
   // Handle hydration
   useEffect(() => {

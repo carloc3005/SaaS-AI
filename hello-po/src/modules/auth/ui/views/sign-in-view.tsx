@@ -27,23 +27,31 @@ export const SignInView = () => {
     const [pending, setPending] = useState(false);
     const router = useRouter();
 
-    // Check if user is already authenticated
+    // Check if user is already authenticated only once on mount
     useEffect(() => {
+        let isMounted = true;
+        
         const checkAuth = async () => {
             try {
                 const session = await authClient.getSession();
-                if (session) {
+                console.log("Initial session check on sign-in page:", session);
+                
+                if (session?.data?.user && isMounted) {
                     // User is already logged in, redirect to home
                     router.push("/");
                 }
             } catch (error) {
                 // User is not logged in, that's fine
-                console.log("No active session found");
+                console.log("No active session found:", error);
             }
         };
         
         checkAuth();
-    }, [router]);
+        
+        return () => {
+            isMounted = false;
+        };
+    }, []); // Remove router dependency to prevent continuous checks
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -66,13 +74,35 @@ export const SignInView = () => {
 
             if (result.data) {
                 console.log('Login successful:', result.data);
-                setPending(false);
                 setSuccess("Signed in successfully! Redirecting...");
                 
-                // Force a page reload to ensure session is properly established
-                setTimeout(() => {
-                    window.location.href = "/";
-                }, 1000);
+                // Wait a bit for the session to be established, then redirect
+                setTimeout(async () => {
+                    // Verify the session is established before redirecting
+                    try {
+                        const session = await authClient.getSession();
+                        console.log("Post-login session check:", session);
+                        
+                        if (session?.data?.user) {
+                            // Use router.push for better handling, with fallback to window.location
+                            router.push("/");
+                            // Fallback if router.push doesn't work
+                            setTimeout(() => {
+                                if (window.location.pathname === "/sign-in") {
+                                    window.location.href = "/";
+                                }
+                            }, 500);
+                        } else {
+                            // Session not established, try reloading the page to trigger server-side check
+                            window.location.reload();
+                        }
+                    } catch (err) {
+                        console.error("Error checking session after login:", err);
+                        // If there's an error checking session, reload the page
+                        window.location.reload();
+                    }
+                    setPending(false);
+                }, 800); // Increased timeout to give more time for session establishment
             }
         } catch (error: any) {
             console.error('Login error:', error);
@@ -95,13 +125,26 @@ export const SignInView = () => {
         setPending(true);
 
         try {
-            await authClient.signIn.social({
+            const result = await authClient.signIn.social({
                 provider: provider,
                 callbackURL: "/",
             });
             
-            // Social login usually redirects automatically
+            // Social login usually redirects automatically, but let's ensure it works
             setSuccess("Redirecting to " + provider + "...");
+            
+            // If the social login doesn't auto-redirect, handle it manually
+            if (result.data) {
+                setTimeout(() => {
+                    router.push("/");
+                    // Fallback
+                    setTimeout(() => {
+                        if (window.location.pathname === "/sign-in") {
+                            window.location.href = "/";
+                        }
+                    }, 500);
+                }, 500);
+            }
         } catch (error: any) {
             setPending(false);
             setError(error.message || "An error occurred during social sign in.");

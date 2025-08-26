@@ -35,11 +35,13 @@ export const auth = betterAuth({
         crossSubDomainCookies: {
             enabled: true,
         },
-        // Remove generateId: false as it can cause issues
+        cookiePrefix: "better-auth",
     },
     trustedOrigins: [
         process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000",
-        // Add Vercel preview domains if needed
+        // Add current Vercel URL if available
         ...(process.env.VERCEL_URL ? [`https://${process.env.VERCEL_URL}`] : []),
+        // Add common Vercel patterns
+        "https://*.vercel.app",
     ],
 });
