@@ -1,28 +1,9 @@
-import { SignInView } from "@/modules/auth/ui/views/sign-in-view";
-import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
-import { redirect } from "next/navigation";
+import { SimpleSignInView } from "@/components/simple-sign-in";
 
 const SignInPage = async () => {
-  // TEMPORARILY DISABLE SERVER-SIDE AUTH CHECK FOR DEBUGGING
-  console.log("Sign-in page server component loaded");
+  console.log("Sign-in page server component loaded - MINIMAL VERSION");
   
-  /*
-  try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
-
-    if (session?.user) {
-      redirect("/")
-    }
-  } catch (error) {
-    // If there's an error getting the session, just continue to show sign-in
-    console.log("Error checking session on sign-in page:", error);
-  }
-  */
-
-  return <SignInView />;
+  return <SimpleSignInView />;
 };
 
 export default SignInPage;

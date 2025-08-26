@@ -1,6 +1,4 @@
-import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
-import { TRPCReactProvider } from "@/trpc/client";
 
 export const metadata = {
   title: 'My Next.js App',
@@ -12,14 +10,13 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+  console.log("Root layout render");
+  
   return (
-    <TRPCReactProvider>
-      <html lang="en" suppressHydrationWarning>
-        <body>
-          {children}
-          <Toaster />
-        </body>
-      </html>
-    </TRPCReactProvider>
+    <html lang="en" suppressHydrationWarning>
+      <body>
+        {children}
+      </body>
+    </html>
   )
 }
