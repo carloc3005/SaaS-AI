@@ -1,7 +1,7 @@
 import { createAuthClient } from "better-auth/react";
 
 const getBaseURL = () => {
-    // In browser, use the current origin
+    // In browser, use the current origin (this is the most reliable)
     if (typeof window !== 'undefined') {
         return window.location.origin;
     }
@@ -15,12 +15,14 @@ const getBaseURL = () => {
         return process.env.NEXT_PUBLIC_BASE_URL;
     }
     
-    if (process.env.VERCEL_URL) {
-        return `https://${process.env.VERCEL_URL}`;
+    // On Vercel, use VERCEL_PROJECT_PRODUCTION_URL for production domain
+    if (process.env.VERCEL_PROJECT_PRODUCTION_URL && process.env.VERCEL_ENV === 'production') {
+        return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
     }
     
-    if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
-        return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
+    // Use VERCEL_URL for other environments
+    if (process.env.VERCEL_URL) {
+        return `https://${process.env.VERCEL_URL}`;
     }
     
     return "http://localhost:3000";
