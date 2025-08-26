@@ -14,9 +14,14 @@ const getBaseURL = () => {
         return process.env.NEXT_PUBLIC_BASE_URL;
     }
     
-    // Use Vercel URL if available
+    // Use Vercel URL if available (this will be the current deployment URL)
     if (process.env.VERCEL_URL) {
         return `https://${process.env.VERCEL_URL}`;
+    }
+    
+    // Use Vercel Project Production URL if available
+    if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+        return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
     }
     
     // Fallback to localhost
