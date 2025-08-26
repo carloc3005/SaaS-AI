@@ -47,17 +47,25 @@ export const SignInView = () => {
             const result = await authClient.signIn.email({
                 email: data.email,
                 password: data.password,
+                callbackURL: "/", // Add callback URL
             });
 
-            if (result.data) {
+            console.log('Login result:', result);
+
+            if (result.data && !result.error) {
                 console.log('Login successful:', result.data);
                 setSuccess("Signed in successfully! Redirecting...");
+                setPending(false);
                 
-                // Don't check session immediately, just redirect
+                // Immediate redirect after successful login
                 setTimeout(() => {
                     console.log("Redirecting after successful login...");
                     window.location.href = "/";
-                }, 1500); // Give time for success message to show
+                }, 800);
+            } else if (result.error) {
+                console.error('Login failed:', result.error);
+                setPending(false);
+                setError(result.error.message || "Login failed. Please try again.");
             }
         } catch (error: any) {
             console.error('Login error:', error);

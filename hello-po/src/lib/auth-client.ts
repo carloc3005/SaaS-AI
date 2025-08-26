@@ -29,5 +29,8 @@ export const authClient = createAuthClient({
         onError: (context) => {
             console.error("Auth client error:", context);
         },
+        onSuccess: (context) => {
+            console.log("Auth client success:", context);
+        },
     },
 });
