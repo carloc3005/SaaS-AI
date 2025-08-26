@@ -1,4 +1,4 @@
-import { agents } from "@/db/schema";
+import { agents, meetings } from "@/db/schema";
 import { db } from "@/db";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { agentsInsertedSchema, agentsUpdateSchema } from "./schemas";
@@ -61,9 +61,12 @@ export const agentsRouter = createTRPCRouter({
     getOne: protectedProcedure.input(z.object({ id: z.string() })).query(async ({ input, ctx }) => {
         const [existingAgent] = await db
             .select({
-                // TODO: Change to actual count
                 ...getTableColumns(agents),
-                meetingCount: sql<number>`5`,
+                meetingCount: sql<number>`(
+                    SELECT COUNT(*) 
+                    FROM ${meetings} 
+                    WHERE ${meetings.agentId} = ${agents.id}
+                )::int`,
             })
             .from(agents)
             .where(and(
@@ -97,7 +100,11 @@ export const agentsRouter = createTRPCRouter({
             const data = await db
                 .select({
                     ...getTableColumns(agents),
-                    meetingCount: sql<number>`5`,
+                    meetingCount: sql<number>`(
+                        SELECT COUNT(*) 
+                        FROM ${meetings} 
+                        WHERE ${meetings.agentId} = ${agents.id}
+                    )::int`,
                 })
                 .from(agents)
                 .where(

@@ -9,7 +9,6 @@ import {
 } from "@/components/ui/breadcrumb";
 import { ChevronRightIcon, TrashIcon, PencilIcon, MoreVerticalIcon, Lock, Copy } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -39,14 +38,8 @@ export const MeetingIdViewHeader = ({
     onEdit,
     onRemove,
 }: Props) => {
-    const [isClient, setIsClient] = useState(false);
-    
-    useEffect(() => {
-        setIsClient(true);
-    }, []);
-    
     const copyPin = () => {
-        if (pin && isClient && typeof navigator !== 'undefined') {
+        if (pin && typeof navigator !== 'undefined') {
             navigator.clipboard.writeText(pin);
             toast.success("PIN copied to clipboard!");
         }
@@ -110,16 +103,14 @@ export const MeetingIdViewHeader = ({
                             <Badge variant="outline" className="bg-white text-blue-900 border-blue-300 font-mono text-lg px-3 py-1">
                                 {pin}
                             </Badge>
-                            {isClient && (
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={copyPin}
-                                    className="border-blue-300 text-blue-700 hover:bg-blue-100"
-                                >
-                                    <Copy className="size-4" />
-                                </Button>
-                            )}
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={copyPin}
+                                className="border-blue-300 text-blue-700 hover:bg-blue-100"
+                            >
+                                <Copy className="size-4" />
+                            </Button>
                         </div>
                     </div>
                 </div>

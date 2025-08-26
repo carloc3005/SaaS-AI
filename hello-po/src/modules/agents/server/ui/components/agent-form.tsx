@@ -30,11 +30,17 @@ export const AgentForm = ({
     const createAgent = useMutation(
         trpc.agents.create.mutationOptions({
             onSuccess: () => {
-                // Invalidate all agents queries
+                // Invalidate the getMany query used in AgentsView
                 queryClient.invalidateQueries({
-                    queryKey: ['agents'],
+                    queryKey: ['agents', 'getMany'],
                 });
 
+                // Also invalidate any general agents queries
+                queryClient.invalidateQueries({
+                    predicate: (query) => {
+                        return query.queryKey[0] === 'agents';
+                    },
+                });
 
                 if (initialValues?.id) {
                     queryClient.invalidateQueries(
@@ -56,18 +62,25 @@ export const AgentForm = ({
     const updateAgent = useMutation(
         trpc.agents.update.mutationOptions({
             onSuccess: () => {
-                // Invalidate all agents queries
-                // ✅ CORRECTED THIS LINE
-                queryClient.invalidateQueries(
-                    trpc.agents.getMany.queryOptions({})
-                );
+                // Invalidate the getMany query used in AgentsView
+                queryClient.invalidateQueries({
+                    queryKey: ['agents', 'getMany'],
+                });
 
+                // Also invalidate any general agents queries
+                queryClient.invalidateQueries({
+                    predicate: (query) => {
+                        return query.queryKey[0] === 'agents';
+                    },
+                });
 
                 if (initialValues?.id) {
                     queryClient.invalidateQueries(
                         trpc.agents.getOne.queryOptions({ id: initialValues.id }),
                     )
                 }
+
+                toast.success("Agent updated successfully!");
                 onSucess?.();
             },
             onError: (error) => {

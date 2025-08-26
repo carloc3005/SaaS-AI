@@ -70,7 +70,7 @@ export const SignInView = () => {
 
     };
 
-    const onSocial = (provider: "github" | "google" | "discord" | "spotify") => {
+    const onSocial = (provider: "google" | "discord") => {
         setError(null);
         setSuccess(null);
         setPending(true);
@@ -165,19 +165,13 @@ export const SignInView = () => {
                                             or
                                         </span>
                                     </div>
-                                    <div className="grid grid-cols-4 gap-4">
+                                    <div className="flex gap-4 justify-center">
                                         <Button disabled={pending} onClick={() => onSocial("google")}
-                                            variant="outline" type="button" className="w-full flex items-center justify-center">
-                                            <img src="/google.svg" alt="Google" className="w-5 h-5" />
+                                            variant="outline" type="button" className="px-8 py-6 flex items-center justify-center">
+                                            <img src="/google.svg" alt="Google" className="w-6 h-6" />
                                         </Button>
-                                        <Button disabled={pending} onClick={() => onSocial("discord")} variant="outline" type="button" className="w-full flex items-center justify-center">
-                                            <img src="/discord.svg" alt="Discord" className="w-5 h-5" />
-                                        </Button>
-                                        <Button disabled={pending} onClick={() => onSocial("spotify")} variant="outline" type="button" className="w-full flex items-center justify-center">
-                                            <img src="/spotify.svg" alt="Spotify" className="w-5 h-5" />
-                                        </Button>
-                                        <Button disabled={pending} onClick={() => onSocial("github")} variant="outline" type="button" className="w-full flex items-center justify-center">
-                                            <img src="/github.svg" alt="GitHub" className="w-5 h-5" />
+                                        <Button disabled={pending} onClick={() => onSocial("discord")} variant="outline" type="button" className="px-8 py-6 flex items-center justify-center">
+                                            <img src="/discord.svg" alt="Discord" className="w-6 h-6" />
                                         </Button>
                                     </div>
                                     <div className="text-center text-sm">

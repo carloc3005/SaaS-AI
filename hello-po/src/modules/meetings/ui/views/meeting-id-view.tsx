@@ -7,6 +7,7 @@ import { useTRPC } from "@/trpc/client";
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { MeetingIdViewHeader } from "../components/meeting-id-header";
 import { useRouter } from "next/navigation";
+import type { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { useConfirm } from "@/modules/agents/hooks/use-confirm";
 import { UpdateMeetingDialog } from "../components/update-meeting-dialog";
 import { useState } from "react";
@@ -21,56 +22,16 @@ interface Props {
 }
 
 export const MeetingIdView = ({ meetingId }: Props) => {
-	// Validate meetingId FIRST, before any hooks are called
-	if (!meetingId || meetingId === "undefined" || meetingId === "null") {
-		return (
-			<ErrorState 
-				title="Invalid Meeting ID" 
-				description="The meeting ID is invalid or missing."
-			/>
-		);
-	}
-
+	// All hooks must be called at the top level, before any early returns
 	const trpc = useTRPC();
 	const queryClient = useQueryClient();
 	const router = useRouter();
-
 	const [updateMeetingDialogOpen, setUpdateMeetingDialogOpen] = useState(false);
 	const [retryCount, setRetryCount] = useState(0);
-
 	const [RemoveConfirmation, confirmRemove] = useConfirm(
 		"Are you sure?",
 		"The following action will remove this meeting"
 	);
-
-	let data, error;
-	try {
-		// Use suspense query but with error boundary
-		const result = useSuspenseQuery({
-			...trpc.meetings.getOne.queryOptions({ id: meetingId }),
-			retry: (failureCount: number, error: any) => {
-				// Retry up to 3 times if meeting is not found (might be recently created)
-				if (failureCount < 3 && error?.message?.includes('not found')) {
-					return true;
-				}
-				return false;
-			},
-			retryDelay: (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 3000),
-		});
-		data = result.data;
-	} catch (err) {
-		error = err;
-	}
-
-	// Handle error state
-	if (error) {
-		return <MeetingIdViewError />;
-	}
-
-	// Handle missing data
-	if (!data) {
-		return <MeetingIdViewLoading />;
-	}
 
 	const removeMeeting = useMutation(
 		trpc.meetings.remove.mutationOptions({
@@ -81,7 +42,29 @@ export const MeetingIdView = ({ meetingId }: Props) => {
 			},
 		})
 	);
+	
+	// Now validate meetingId AFTER all hooks are called
+	if (!meetingId || meetingId === "undefined" || meetingId === "null") {
+		return (
+			<ErrorState 
+				title="Invalid Meeting ID" 
+				description="The meeting ID is invalid or missing."
+			/>
+		);
+	}
 
+	// Use suspense query - let Suspense boundary handle loading/errors
+	const { data } = useSuspenseQuery({
+		...trpc.meetings.getOne.queryOptions({ id: meetingId }),
+		retry: (failureCount: number, error: any) => {
+			// Retry up to 3 times if meeting is not found (might be recently created)
+			if (failureCount < 3 && error?.message?.includes('not found')) {
+				return true;
+			}
+			return false;
+		},
+		retryDelay: (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 3000),
+	});
 
 	const handleRemoveMeeting = async () => {
 		const ok = await confirmRemove();
@@ -135,9 +118,7 @@ export const MeetingIdViewLoading = () => {
 	);
 };
 
-export const MeetingIdViewError = () => {
-	const router = useRouter();
-	
+export const MeetingIdViewError = ({ router }: { router: AppRouterInstance }) => {
 	return (
 		<div className="flex h-screen items-center justify-center">
 			<div className="text-center space-y-4">
@@ -161,4 +142,10 @@ export const MeetingIdViewError = () => {
 			</div>
 		</div>
 	);
+}
+
+// Error fallback for ErrorBoundary usage
+export const MeetingIdViewErrorFallback = () => {
+	const router = useRouter();
+	return <MeetingIdViewError router={router} />;
 }

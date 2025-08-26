@@ -14,11 +14,6 @@ export const auth = betterAuth({
         enabled: true,
     },
     socialProviders: {
-        github: {
-            clientId: process.env.GITHUB_CLIENT_ID as string,
-            clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
-        },
-
         google: {
             clientId: process.env.GOOGLE_CLIENT_ID as string,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
@@ -27,11 +22,6 @@ export const auth = betterAuth({
         discord: {
             clientId: process.env.DISCORD_CLIENT_ID as string,
             clientSecret: process.env.DISCORD_CLIENT_SECRET as string,
-        },
-
-        spotify: {
-            clientId: process.env.SPOTIFY_CLIENT_ID as string,
-            clientSecret: process.env.SPOTIFY_CLIENT_SECRET as string,
         },
     },
 });

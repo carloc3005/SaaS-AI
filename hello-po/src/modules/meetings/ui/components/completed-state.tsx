@@ -27,31 +27,71 @@ export const CompletedState = ({
 }: Props) => {
 	const [activeTab, setActiveTab] = useState("summary");
 	const [searchTerm, setSearchTerm] = useState("");
-	const [isClient, setIsClient] = useState(false);
-
-	useEffect(() => {
-		setIsClient(true);
-	}, []);
 
 	const highlightText = (text: string) => {
 		const searchWords = searchTerm.trim() ? searchTerm.trim().split(/\s+/) : [];
 		
+		// Define important keywords to automatically highlight
+		const importantKeywords = [
+			// Action items and decisions
+			'action item', 'action items', 'next steps', 'follow up', 'follow-up', 'todo', 'to-do',
+			'decision', 'decisions', 'agreed', 'approved', 'deadline', 'due date', 'deliverable',
+			
+			// Meeting outcomes
+			'key takeaway', 'takeaways', 'conclusion', 'summary', 'outcome', 'result', 'resolution',
+			
+			// Important roles and responsibilities
+			'responsible', 'owner', 'assigned', 'lead', 'manager', 'team lead',
+			
+			// Dates and timing
+			'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday',
+			'january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 
+			'september', 'october', 'november', 'december',
+			'deadline', 'due', 'schedule', 'timeline',
+			
+			// Priority indicators
+			'urgent', 'high priority', 'critical', 'important', 'asap', 'immediately',
+			
+			// Technical terms
+			'api', 'database', 'integration', 'deployment', 'release', 'version', 'update',
+			
+			// Business terms
+			'budget', 'cost', 'revenue', 'profit', 'roi', 'kpi', 'metric', 'target', 'goal'
+		];
+		
+		const allWordsToHighlight = [...searchWords];
+		
+		// Add important keywords if no search term is provided
 		if (searchWords.length === 0) {
+			// Find which important keywords exist in the text
+			const textLower = text.toLowerCase();
+			importantKeywords.forEach(keyword => {
+				if (textLower.includes(keyword.toLowerCase())) {
+					allWordsToHighlight.push(keyword);
+				}
+			});
+		}
+		
+		if (allWordsToHighlight.length === 0) {
 			return <span>{text}</span>;
 		}
 		
 		return (
 			<Highlighter
-				highlightClassName="bg-yellow-200 text-yellow-900 px-1 rounded font-medium"
-				searchWords={searchWords}
+				highlightClassName={searchWords.length > 0 
+					? "bg-yellow-200 text-yellow-900 px-1 rounded font-medium" 
+					: "bg-blue-100 text-blue-900 px-1 rounded font-semibold border border-blue-200"
+				}
+				searchWords={allWordsToHighlight}
 				autoEscape={true}
 				textToHighlight={text}
+				caseSensitive={false}
 			/>
 		);
 	};
 
 	const handleCopySummary = async () => {
-		if (summary && isClient && typeof navigator !== 'undefined') {
+		if (summary && typeof navigator !== 'undefined') {
 			try {
 				await navigator.clipboard.writeText(summary);
 				// You could add a toast notification here
@@ -62,7 +102,7 @@ export const CompletedState = ({
 	};
 
 	const handleDownloadSummary = () => {
-		if (summary && isClient && typeof document !== 'undefined') {
+		if (summary && typeof document !== 'undefined') {
 			const blob = new Blob([summary], { type: 'text/markdown' });
 			const url = URL.createObjectURL(blob);
 			const a = document.createElement('a');
@@ -76,7 +116,9 @@ export const CompletedState = ({
 	};
 
 	const renderSummaryContent = (text: string) => {
-		// Simple summary rendering without complex parsing
+		// Enhanced summary rendering with better structure recognition
+		const lines = text.split('\n').filter(line => line.trim());
+		
 		return (
 			<div className="space-y-4">
 				<div className="mb-6">
@@ -86,12 +128,84 @@ export const CompletedState = ({
 						</span>
 						Meeting Summary
 					</h2>
-					<div className="text-gray-700 leading-relaxed space-y-3">
-						{text.split('\n').map((line, idx) => 
-							line.trim() ? (
-								<p key={idx} className="pl-9">{highlightText(line.trim())}</p>
-							) : null
-						)}
+					<div className="text-gray-700 leading-relaxed space-y-4">
+						{lines.map((line, idx) => {
+							const trimmedLine = line.trim();
+							
+							// Check if line is a header (starts with ### or ##)
+							if (trimmedLine.startsWith('###')) {
+								return (
+									<h3 key={idx} className="text-lg font-bold text-gray-900 mt-6 mb-3 pb-2 border-b border-gray-200">
+										{highlightText(trimmedLine.replace(/^#{1,3}\s*/, ''))}
+									</h3>
+								);
+							}
+							
+							if (trimmedLine.startsWith('##')) {
+								return (
+									<h2 key={idx} className="text-xl font-bold text-gray-900 mt-8 mb-4 pb-2 border-b-2 border-blue-200">
+										{highlightText(trimmedLine.replace(/^#{1,2}\s*/, ''))}
+									</h2>
+								);
+							}
+							
+							// Check if line starts with a bullet point or dash
+							if (trimmedLine.match(/^[-•*]\s/)) {
+								return (
+									<div key={idx} className="flex items-start gap-3 pl-4">
+										<span className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></span>
+										<p className="text-gray-700">
+											{highlightText(trimmedLine.replace(/^[-•*]\s/, ''))}
+										</p>
+									</div>
+								);
+							}
+							
+							// Check if line is likely an action item (contains action words)
+							const actionWords = ['action item', 'todo', 'follow up', 'next steps', 'assigned', 'deadline', 'due'];
+							const isActionItem = actionWords.some(word => 
+								trimmedLine.toLowerCase().includes(word.toLowerCase())
+							);
+							
+							if (isActionItem) {
+								return (
+									<div key={idx} className="bg-orange-50 border-l-4 border-orange-400 p-4 rounded-r-lg">
+										<div className="flex items-start gap-2">
+											<span className="text-orange-600 font-semibold text-sm">ACTION:</span>
+											<p className="text-gray-800 font-medium">
+												{highlightText(trimmedLine)}
+											</p>
+										</div>
+									</div>
+								);
+							}
+							
+							// Check if line contains decisions or conclusions
+							const decisionWords = ['decision', 'concluded', 'agreed', 'approved', 'resolved'];
+							const isDecision = decisionWords.some(word => 
+								trimmedLine.toLowerCase().includes(word.toLowerCase())
+							);
+							
+							if (isDecision) {
+								return (
+									<div key={idx} className="bg-green-50 border-l-4 border-green-400 p-4 rounded-r-lg">
+										<div className="flex items-start gap-2">
+											<span className="text-green-600 font-semibold text-sm">DECISION:</span>
+											<p className="text-gray-800 font-medium">
+												{highlightText(trimmedLine)}
+											</p>
+										</div>
+									</div>
+								);
+							}
+							
+							// Regular paragraph
+							return (
+								<p key={idx} className="pl-4 text-gray-700 leading-relaxed">
+									{highlightText(trimmedLine)}
+								</p>
+							);
+						})}
 					</div>
 				</div>
 			</div>
@@ -178,26 +292,22 @@ export const CompletedState = ({
 													Clear
 												</Button>
 											)}
-											{isClient && (
-												<>
-													<Button
-														variant="outline"
-														size="sm"
-														onClick={handleCopySummary}
-													>
-														<CopyIcon className="h-4 w-4 mr-2" />
-														Copy
-													</Button>
-													<Button
-														variant="outline"
-														size="sm"
-														onClick={handleDownloadSummary}
-													>
-														<DownloadIcon className="h-4 w-4 mr-2" />
-														Download
-													</Button>
-												</>
-											)}
+											<Button
+												variant="outline"
+												size="sm"
+												onClick={handleCopySummary}
+											>
+												<CopyIcon className="h-4 w-4 mr-2" />
+												Copy
+											</Button>
+											<Button
+												variant="outline"
+												size="sm"
+												onClick={handleDownloadSummary}
+											>
+												<DownloadIcon className="h-4 w-4 mr-2" />
+												Download
+											</Button>
 										</div>
 									</div>
 									{renderSummaryContent(summary)}

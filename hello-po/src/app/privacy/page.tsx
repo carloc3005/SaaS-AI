@@ -44,7 +44,7 @@ const PrivacyPolicyPage = () => {
             <section>
               <h2 className="text-xl font-semibold mb-3">4. Social Media Login</h2>
               <p className="text-gray-700">
-                When you sign in using social media accounts (Facebook, Google, GitHub), we only access basic profile information necessary for authentication. We do not access or store your social media passwords.
+                When you sign in using social media accounts (Google, Discord), we only access basic profile information necessary for authentication. We do not access or store your social media passwords.
               </p>
             </section>
 
