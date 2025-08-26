@@ -3,8 +3,28 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { db } from "@/db";
 import * as schema from "@/db/schema";
 
+const getBaseURL = () => {
+    // Use BETTER_AUTH_URL if set
+    if (process.env.BETTER_AUTH_URL) {
+        return process.env.BETTER_AUTH_URL;
+    }
+    
+    // Use NEXT_PUBLIC_BASE_URL if set
+    if (process.env.NEXT_PUBLIC_BASE_URL) {
+        return process.env.NEXT_PUBLIC_BASE_URL;
+    }
+    
+    // Use Vercel URL if available
+    if (process.env.VERCEL_URL) {
+        return `https://${process.env.VERCEL_URL}`;
+    }
+    
+    // Fallback to localhost
+    return "http://localhost:3000";
+};
+
 export const auth = betterAuth({
-    baseURL: process.env.BETTER_AUTH_URL || process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000",
+    baseURL: getBaseURL(),
     secret: process.env.BETTER_AUTH_SECRET!,
     database: drizzleAdapter(db, {
         provider: "pg",
@@ -42,10 +62,12 @@ export const auth = betterAuth({
         cookiePrefix: "better-auth",
     },
     trustedOrigins: [
-        process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000",
+        getBaseURL(),
         // Add current Vercel URL if available
         ...(process.env.VERCEL_URL ? [`https://${process.env.VERCEL_URL}`] : []),
         // Add common Vercel patterns
         "https://*.vercel.app",
+        // Add localhost for development
+        "http://localhost:3000",
     ],
 });

@@ -27,8 +27,7 @@ export async function OPTIONS(request: Request) {
 }
 
 // Wrap the auth handlers with CORS headers
-async function withCORS(handler: any, request: Request) {
-    const response = await handler(request);
+async function withCORS(response: Response, request: Request) {
     const origin = request.headers.get('origin');
     
     // Allow requests from the same origin or trusted origins
@@ -49,10 +48,5 @@ async function withCORS(handler: any, request: Request) {
     return response;
 }
 
-export async function GET(request: Request) {
-    return withCORS(auth.handler, request);
-}
-
-export async function POST(request: Request) {
-    return withCORS(auth.handler, request);
-}
+export const GET = auth.handler;
+export const POST = auth.handler;
