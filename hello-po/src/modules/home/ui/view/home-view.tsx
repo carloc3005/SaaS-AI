@@ -34,31 +34,38 @@ export const Homeview = () => {
   const [sessionLoading, setSessionLoading] = useState(true);
   const router = useRouter();
 
-  // Verify authentication on component mount
+  // Verify authentication on component mount - ONLY ONCE
   useEffect(() => {
+    let isMounted = true;
+    
     const verifyAuth = async () => {
       try {
+        console.log("Verifying auth on home page...");
         const session = await authClient.getSession();
         console.log("Home page session check:", session);
         
-        if (session?.data?.user) {
+        if (session?.data?.user && isMounted) {
           setUser(session.data.user);
-        } else {
-          // No valid session, redirect to sign-in
-          router.push("/sign-in");
-          return;
+          setSessionLoading(false);
+        } else if (isMounted) {
+          console.log("No valid session, redirecting to sign-in...");
+          router.replace("/sign-in");
         }
       } catch (error) {
         console.error("Auth verification failed on home page:", error);
-        router.push("/sign-in");
-        return;
-      } finally {
-        setSessionLoading(false);
+        if (isMounted) {
+          router.replace("/sign-in");
+        }
       }
     };
 
+    // Only verify once on mount
     verifyAuth();
-  }, [router]);
+    
+    return () => {
+      isMounted = false;
+    };
+  }, []); // No dependencies to prevent re-runs
 
   // Show loading state while verifying authentication
   if (sessionLoading) {
