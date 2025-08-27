@@ -9,7 +9,13 @@ export default async function RootPage() {
       headers: await headers(),
     });
 
-    console.log('Root page session check:', !!session?.user);
+    console.log('Root page session check:', {
+      hasSession: !!session,
+      hasUser: !!session?.user,
+      hasUserId: !!session?.user?.id,
+      userEmail: session?.user?.email,
+      sessionToken: session?.session?.id
+    });
 
     // Check if session has user data with more lenient check
     if (!session?.user?.id) {

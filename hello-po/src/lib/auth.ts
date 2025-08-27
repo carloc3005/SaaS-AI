@@ -6,32 +6,27 @@ import * as schema from "@/db/schema";
 const getBaseURL = () => {
     // Use BETTER_AUTH_URL if explicitly set
     if (process.env.BETTER_AUTH_URL) {
-        console.log('Using BETTER_AUTH_URL:', process.env.BETTER_AUTH_URL);
         return process.env.BETTER_AUTH_URL;
     }
     
     // Use NEXT_PUBLIC_BASE_URL if set
     if (process.env.NEXT_PUBLIC_BASE_URL) {
-        console.log('Using NEXT_PUBLIC_BASE_URL:', process.env.NEXT_PUBLIC_BASE_URL);
         return process.env.NEXT_PUBLIC_BASE_URL;
     }
     
     // On Vercel, use VERCEL_PROJECT_PRODUCTION_URL for production domain
     if (process.env.VERCEL_PROJECT_PRODUCTION_URL && process.env.VERCEL_ENV === 'production') {
         const url = `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
-        console.log('Using VERCEL_PROJECT_PRODUCTION_URL:', url);
         return url;
     }
     
     // Use VERCEL_URL for other environments (preview, development)
     if (process.env.VERCEL_URL) {
         const url = `https://${process.env.VERCEL_URL}`;
-        console.log('Using VERCEL_URL:', url);
         return url;
     }
     
     // Fallback to localhost for local development
-    console.log('Using localhost fallback');
     return "http://localhost:3000";
 };
 

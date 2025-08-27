@@ -47,7 +47,7 @@ export const SignInView = () => {
             const result = await authClient.signIn.email({
                 email: data.email,
                 password: data.password,
-                callbackURL: "/", // Add callback URL
+                callbackURL: "/auth/callback", // Use callback route
             });
 
             console.log('Login result:', result);
@@ -56,11 +56,27 @@ export const SignInView = () => {
                 console.log('Login successful:', result.data);
                 setSuccess("Signed in successfully! Redirecting...");
                 
-                // Wait a bit longer for session to be established, then redirect
-                await new Promise(resolve => setTimeout(resolve, 1000));
-                
-                // Force a hard refresh to ensure session is properly loaded
-                window.location.href = "/";
+                // Verify session was created by checking for it
+                try {
+                    const sessionCheck = await authClient.getSession();
+                    console.log('Session check after login:', sessionCheck);
+                    
+                    if (sessionCheck.data?.user) {
+                        console.log('Session verified, redirecting to callback');
+                        // Wait a moment then redirect to callback
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                        window.location.href = "/auth/callback";
+                    } else {
+                        console.error('No session found after login');
+                        setPending(false);
+                        setError("Login succeeded but session not established. Please try again.");
+                    }
+                } catch (sessionError) {
+                    console.error('Error checking session after login:', sessionError);
+                    // Try redirect to callback anyway
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    window.location.href = "/auth/callback";
+                }
             } else if (result.error) {
                 console.error('Login failed:', result.error);
                 setPending(false);
