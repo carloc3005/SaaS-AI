@@ -13,6 +13,7 @@ import Link from "next/link";
 import { authClient } from "@/lib/auth-client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { AuthRedirect } from "@/components/auth-redirect";
 
 const formSchema = z.object({
     email: z.string().email(),
@@ -25,6 +26,7 @@ export const SignInView = () => {
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
     const [pending, setPending] = useState(false);
+    const [shouldRedirect, setShouldRedirect] = useState(false);
     const router = useRouter();
 
     // Removed auto auth check to prevent session conflicts
@@ -44,26 +46,77 @@ export const SignInView = () => {
         setPending(true);
 
         try {
-            const result = await authClient.signIn.email({
-                email: data.email,
-                password: data.password,
-                // Don't use callback URL, let it redirect directly
+            // Try custom API route first
+            const response = await fetch('/api/auth/signin', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    email: data.email,
+                    password: data.password,
+                }),
+                credentials: 'include'
             });
 
-            console.log('Login result:', result);
+            const result = await response.json();
+            console.log('Custom API sign-in result:', result);
 
-            if (result.data && !result.error) {
-                console.log('Login successful:', result.data);
+            if (result.success && result.user) {
+                console.log('Login successful via custom API:', result.user);
                 setSuccess("Signed in successfully! Redirecting...");
                 
-                // Small delay then redirect to home
+                // Multiple redirect strategies
+                setShouldRedirect(true);
+                
+                // Immediate redirect attempt
                 setTimeout(() => {
                     window.location.href = "/";
                 }, 1000);
-            } else if (result.error) {
-                console.error('Login failed:', result.error);
-                setPending(false);
-                setError(result.error.message || "Login failed. Please try again.");
+                
+            } else {
+                // Fallback to original auth client method
+                const authResult = await authClient.signIn.email({
+                    email: data.email,
+                    password: data.password,
+                });
+
+                console.log('Fallback auth client result:', authResult);
+
+                if (authResult.data && !authResult.error) {
+                    console.log('Login successful via auth client:', authResult.data);
+                    setSuccess("Signed in successfully! Redirecting...");
+                    
+                    setShouldRedirect(true);
+                    
+                    setTimeout(async () => {
+                        try {
+                            const sessionCheck = await authClient.getSession();
+                            console.log('Session check after login:', sessionCheck);
+                            
+                            if (sessionCheck.data?.user) {
+                                console.log('Session verified, redirecting to home');
+                                router.push('/');
+                                setTimeout(() => {
+                                    window.location.href = "/";
+                                }, 1000);
+                            } else {
+                                console.log('No session found, forcing page reload');
+                                window.location.reload();
+                            }
+                        } catch (sessionError) {
+                            console.error('Error checking session after login:', sessionError);
+                            window.location.reload();
+                        }
+                    }, 1500);
+                } else if (authResult.error) {
+                    console.error('Login failed:', authResult.error);
+                    setPending(false);
+                    setError(authResult.error.message || "Login failed. Please try again.");
+                } else {
+                    setPending(false);
+                    setError(result.error || "Login failed. Please try again.");
+                }
             }
         } catch (error: any) {
             console.error('Login error:', error);
@@ -102,6 +155,8 @@ export const SignInView = () => {
     };
 
     return (
+        <>
+            {shouldRedirect && <AuthRedirect to="/" delay={2000} />}
             <div className="flex min-h-screen flex-col items-center justify-center gap-10 p-6">
                 <Card className="w-full max-w-sm overflow-hidden p-0 md:max-w-3xl">
                     <CardContent className="grid p-0 md:grid-cols-2">
@@ -212,5 +267,6 @@ export const SignInView = () => {
                     </Link>
                 </div>
             </div>
-        );
+        </>
+    );
 }
