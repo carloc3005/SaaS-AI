@@ -70,8 +70,9 @@ export const auth = betterAuth({
         "http://localhost:3000",
         // Add Vercel patterns
         "https://*.vercel.app",
-        // Add your specific Vercel domain
+        // Add your specific Vercel domains
         "https://hello-kl0jtd1vu-carlo-castillos-projects-1517593b.vercel.app",
+        "https://hello-edz8zou8z-carlo-castillos-projects-1517593b.vercel.app",
         // Add any additional origins that might be needed
         ...(process.env.VERCEL_URL ? [`https://${process.env.VERCEL_URL}`] : []),
         ...(process.env.VERCEL_PROJECT_PRODUCTION_URL ? [`https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`] : []),
