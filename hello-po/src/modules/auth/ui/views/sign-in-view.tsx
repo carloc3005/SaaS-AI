@@ -47,7 +47,7 @@ export const SignInView = () => {
             const result = await authClient.signIn.email({
                 email: data.email,
                 password: data.password,
-                callbackURL: "/auth/callback", // Use callback route
+                // Don't use callback URL, let it redirect directly
             });
 
             console.log('Login result:', result);
@@ -56,27 +56,10 @@ export const SignInView = () => {
                 console.log('Login successful:', result.data);
                 setSuccess("Signed in successfully! Redirecting...");
                 
-                // Verify session was created by checking for it
-                try {
-                    const sessionCheck = await authClient.getSession();
-                    console.log('Session check after login:', sessionCheck);
-                    
-                    if (sessionCheck.data?.user) {
-                        console.log('Session verified, redirecting to callback');
-                        // Wait a moment then redirect to callback
-                        await new Promise(resolve => setTimeout(resolve, 500));
-                        window.location.href = "/auth/callback";
-                    } else {
-                        console.error('No session found after login');
-                        setPending(false);
-                        setError("Login succeeded but session not established. Please try again.");
-                    }
-                } catch (sessionError) {
-                    console.error('Error checking session after login:', sessionError);
-                    // Try redirect to callback anyway
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                    window.location.href = "/auth/callback";
-                }
+                // Small delay then redirect to home
+                setTimeout(() => {
+                    window.location.href = "/";
+                }, 1000);
             } else if (result.error) {
                 console.error('Login failed:', result.error);
                 setPending(false);

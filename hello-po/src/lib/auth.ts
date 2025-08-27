@@ -14,19 +14,15 @@ const getBaseURL = () => {
         return process.env.NEXT_PUBLIC_BASE_URL;
     }
     
-    // On Vercel, use VERCEL_PROJECT_PRODUCTION_URL for production domain
-    if (process.env.VERCEL_PROJECT_PRODUCTION_URL && process.env.VERCEL_ENV === 'production') {
-        const url = `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
-        return url;
-    }
-    
-    // Use VERCEL_URL for other environments (preview, development)
+    // Priority: Use VERCEL_URL first (it's always set on Vercel)
     if (process.env.VERCEL_URL) {
         const url = `https://${process.env.VERCEL_URL}`;
+        console.log('Using VERCEL_URL for auth baseURL:', url);
         return url;
     }
     
     // Fallback to localhost for local development
+    console.log('Using localhost for auth baseURL');
     return "http://localhost:3000";
 };
 
@@ -74,6 +70,8 @@ export const auth = betterAuth({
         "http://localhost:3000",
         // Add Vercel patterns
         "https://*.vercel.app",
+        // Add your specific Vercel domain
+        "https://hello-kl0jtd1vu-carlo-castillos-projects-1517593b.vercel.app",
         // Add any additional origins that might be needed
         ...(process.env.VERCEL_URL ? [`https://${process.env.VERCEL_URL}`] : []),
         ...(process.env.VERCEL_PROJECT_PRODUCTION_URL ? [`https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`] : []),
