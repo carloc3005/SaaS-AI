@@ -13,7 +13,6 @@ import Link from "next/link";
 import { authClient } from "@/lib/auth-client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { AuthRedirect } from "@/components/auth-redirect";
 
 const formSchema = z.object({
     email: z.string().email(),
@@ -26,7 +25,7 @@ export const SignInView = () => {
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
     const [pending, setPending] = useState(false);
-    const [shouldRedirect, setShouldRedirect] = useState(false);
+    const [countdown, setCountdown] = useState<number | null>(null);
     const router = useRouter();
 
     // Removed auto auth check to prevent session conflicts
@@ -66,12 +65,19 @@ export const SignInView = () => {
                 console.log('Login successful via custom API:', result.user);
                 setSuccess("Signed in successfully! Redirecting...");
                 
-                // Multiple redirect strategies
-                setShouldRedirect(true);
+                // Start countdown
+                let timeLeft = 3;
+                setCountdown(timeLeft);
                 
-                // Immediate redirect attempt
-                setTimeout(() => {
-                    window.location.href = "/";
+                const countdownInterval = setInterval(() => {
+                    timeLeft -= 1;
+                    setCountdown(timeLeft);
+                    
+                    if (timeLeft <= 0) {
+                        clearInterval(countdownInterval);
+                        console.log('Redirecting to home page...');
+                        window.location.href = "/";
+                    }
                 }, 1000);
                 
             } else {
@@ -87,28 +93,20 @@ export const SignInView = () => {
                     console.log('Login successful via auth client:', authResult.data);
                     setSuccess("Signed in successfully! Redirecting...");
                     
-                    setShouldRedirect(true);
+                    // Start countdown for fallback method too
+                    let timeLeft = 3;
+                    setCountdown(timeLeft);
                     
-                    setTimeout(async () => {
-                        try {
-                            const sessionCheck = await authClient.getSession();
-                            console.log('Session check after login:', sessionCheck);
-                            
-                            if (sessionCheck.data?.user) {
-                                console.log('Session verified, redirecting to home');
-                                router.push('/');
-                                setTimeout(() => {
-                                    window.location.href = "/";
-                                }, 1000);
-                            } else {
-                                console.log('No session found, forcing page reload');
-                                window.location.reload();
-                            }
-                        } catch (sessionError) {
-                            console.error('Error checking session after login:', sessionError);
-                            window.location.reload();
+                    const countdownInterval = setInterval(() => {
+                        timeLeft -= 1;
+                        setCountdown(timeLeft);
+                        
+                        if (timeLeft <= 0) {
+                            clearInterval(countdownInterval);
+                            console.log('Redirecting to home page...');
+                            window.location.href = "/";
                         }
-                    }, 1500);
+                    }, 1000);
                 } else if (authResult.error) {
                     console.error('Login failed:', authResult.error);
                     setPending(false);
@@ -155,9 +153,7 @@ export const SignInView = () => {
     };
 
     return (
-        <>
-            {shouldRedirect && <AuthRedirect to="/" delay={2000} />}
-            <div className="flex min-h-screen flex-col items-center justify-center gap-10 p-6">
+        <div className="flex min-h-screen flex-col items-center justify-center gap-10 p-6">
                 <Card className="w-full max-w-sm overflow-hidden p-0 md:max-w-3xl">
                     <CardContent className="grid p-0 md:grid-cols-2">
                         <Form {...form}>
@@ -208,11 +204,18 @@ export const SignInView = () => {
                                     {!!success && (
                                         <Alert className="bg-green-50 border-green-200 border-none">
                                             <CheckCircle className="h-4 w-4 !text-green-600" />
-                                            <AlertTitle className="text-green-800">{success}</AlertTitle>
+                                            <AlertTitle className="text-green-800">
+                                                {success}
+                                                {countdown !== null && countdown > 0 && (
+                                                    <span className="block text-sm mt-1">
+                                                        Redirecting in {countdown} second{countdown !== 1 ? 's' : ''}...
+                                                    </span>
+                                                )}
+                                            </AlertTitle>
                                         </Alert>
                                     )}
-                                    <Button disabled={pending} type="submit" className="w-full">
-                                        {pending ? "Signing in..." : "Sign In"}
+                                    <Button disabled={pending || !!success} type="submit" className="w-full">
+                                        {pending ? "Signing in..." : success ? "Redirecting..." : "Sign In"}
                                     </Button>
                                     {error && error.includes("No account found") && (
                                         <Button 
@@ -230,11 +233,11 @@ export const SignInView = () => {
                                         </span>
                                     </div>
                                     <div className="flex gap-4 justify-center">
-                                        <Button disabled={pending} onClick={() => onSocial("google")}
+                                        <Button disabled={pending || !!success} onClick={() => onSocial("google")}
                                             variant="outline" type="button" className="px-8 py-6 flex items-center justify-center">
                                             <img src="/google.svg" alt="Google" className="w-6 h-6" />
                                         </Button>
-                                        <Button disabled={pending} onClick={() => onSocial("discord")} variant="outline" type="button" className="px-8 py-6 flex items-center justify-center">
+                                        <Button disabled={pending || !!success} onClick={() => onSocial("discord")} variant="outline" type="button" className="px-8 py-6 flex items-center justify-center">
                                             <img src="/discord.svg" alt="Discord" className="w-6 h-6" />
                                         </Button>
                                     </div>
@@ -267,6 +270,5 @@ export const SignInView = () => {
                     </Link>
                 </div>
             </div>
-        </>
-    );
+        );
 }
