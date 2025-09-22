@@ -25,7 +25,6 @@ export const SignInView = () => {
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
     const [pending, setPending] = useState(false);
-    const [countdown, setCountdown] = useState<number | null>(null);
     const router = useRouter();
 
     // Removed auto auth check to prevent session conflicts
@@ -45,76 +44,60 @@ export const SignInView = () => {
         setPending(true);
 
         try {
-            // Try custom API route first
-            const response = await fetch('/api/auth/signin', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    email: data.email,
-                    password: data.password,
-                }),
-                credentials: 'include'
+            console.log('Starting sign-in process...');
+            
+            // Use Better Auth client directly instead of custom API route
+            const authResult = await authClient.signIn.email({
+                email: data.email,
+                password: data.password,
             });
 
-            const result = await response.json();
-            console.log('Custom API sign-in result:', result);
+            console.log('Auth client result:', authResult);
 
-            if (result.success && result.user) {
-                console.log('Login successful via custom API:', result.user);
+            if (authResult.data && !authResult.error) {
+                console.log('Login successful:', authResult.data);
                 setSuccess("Signed in successfully! Redirecting...");
                 
-                // Start countdown
-                let timeLeft = 3;
-                setCountdown(timeLeft);
-                
-                const countdownInterval = setInterval(() => {
-                    timeLeft -= 1;
-                    setCountdown(timeLeft);
+                // Use Next.js router for better navigation
+                setTimeout(async () => {
+                    console.log('Redirecting to home page...');
+                    console.log('Current location before redirect:', window.location.href);
                     
-                    if (timeLeft <= 0) {
-                        clearInterval(countdownInterval);
-                        console.log('Redirecting to home page...');
-                        window.location.href = "/";
+                    // Check if session is available before redirecting
+                    try {
+                        const sessionCheck = await authClient.getSession();
+                        console.log('Session check before redirect:', sessionCheck);
+                    } catch (sessionError) {
+                        console.log('Session check failed:', sessionError);
                     }
-                }, 1000);
+                    
+                    // Try multiple redirect strategies for maximum compatibility
+                    try {
+                        // First try Next.js router
+                        router.push('/');
+                        console.log('Next.js router redirect attempted');
+                    } catch (routerError) {
+                        console.log('Router redirect failed, using window.location:', routerError);
+                        // Fallback to window.location
+                        window.location.replace("/");
+                    }
+                }, 2000); // Increased delay to 2 seconds
                 
-            } else {
-                // Fallback to original auth client method
-                const authResult = await authClient.signIn.email({
-                    email: data.email,
-                    password: data.password,
-                });
-
-                console.log('Fallback auth client result:', authResult);
-
-                if (authResult.data && !authResult.error) {
-                    console.log('Login successful via auth client:', authResult.data);
-                    setSuccess("Signed in successfully! Redirecting...");
-                    
-                    // Start countdown for fallback method too
-                    let timeLeft = 3;
-                    setCountdown(timeLeft);
-                    
-                    const countdownInterval = setInterval(() => {
-                        timeLeft -= 1;
-                        setCountdown(timeLeft);
-                        
-                        if (timeLeft <= 0) {
-                            clearInterval(countdownInterval);
-                            console.log('Redirecting to home page...');
-                            window.location.href = "/";
-                        }
-                    }, 1000);
-                } else if (authResult.error) {
-                    console.error('Login failed:', authResult.error);
-                    setPending(false);
-                    setError(authResult.error.message || "Login failed. Please try again.");
+            } else if (authResult.error) {
+                console.error('Login failed:', authResult.error);
+                setPending(false);
+                
+                // Better error messages
+                if (authResult.error.message?.includes("Invalid credentials") || authResult.error.message?.includes("incorrect")) {
+                    setError("Invalid email or password. Please check your credentials and try again.");
+                } else if (authResult.error.message?.includes("User not found")) {
+                    setError("No account found with this email. Please sign up first.");
                 } else {
-                    setPending(false);
-                    setError(result.error || "Login failed. Please try again.");
+                    setError(authResult.error.message || "Login failed. Please try again.");
                 }
+            } else {
+                setPending(false);
+                setError("Login failed. Please try again.");
             }
         } catch (error: any) {
             console.error('Login error:', error);
@@ -206,11 +189,6 @@ export const SignInView = () => {
                                             <CheckCircle className="h-4 w-4 !text-green-600" />
                                             <AlertTitle className="text-green-800">
                                                 {success}
-                                                {countdown !== null && countdown > 0 && (
-                                                    <span className="block text-sm mt-1">
-                                                        Redirecting in {countdown} second{countdown !== 1 ? 's' : ''}...
-                                                    </span>
-                                                )}
                                             </AlertTitle>
                                         </Alert>
                                     )}

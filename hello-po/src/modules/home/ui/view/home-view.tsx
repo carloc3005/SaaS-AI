@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -33,6 +33,59 @@ export const Homeview = () => {
   const [user, setUser] = useState<any>(null);
   const [sessionLoading, setSessionLoading] = useState(true);
   const router = useRouter();
+
+  const updateAllTimes = useCallback(() => {
+    const now = new Date();
+    
+    // Local time
+    setCurrentTime(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+    setCurrentDate(now.toLocaleDateString([], { 
+      weekday: 'long', 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    }));
+
+    // US Time zones from Hawaii to New York
+    const usTimeZones = [
+      { name: 'Hawaii', zone: 'Pacific/Honolulu', abbr: 'HST' },
+      { name: 'Alaska', zone: 'America/Anchorage', abbr: 'AKST' },
+      { name: 'Pacific', zone: 'America/Los_Angeles', abbr: 'PST' },
+      { name: 'Mountain', zone: 'America/Denver', abbr: 'MST' },
+      { name: 'Central', zone: 'America/Chicago', abbr: 'CST' },
+      { name: 'Eastern', zone: 'America/New_York', abbr: 'EST' }
+    ];
+
+    const timeZoneData = usTimeZones.map(tz => ({
+      name: tz.name,
+      time: now.toLocaleTimeString('en-US', { 
+        timeZone: tz.zone, 
+        hour: '2-digit', 
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true
+      }),
+      zone: tz.abbr
+    }));
+
+    setTimeZones(timeZoneData);
+  }, []);
+
+  // Handle hydration - must be called before any conditional returns
+  useEffect(() => {
+    setIsClient(true);
+    updateAllTimes();
+  }, [updateAllTimes]);
+
+  // Update time every second (only on client) - must be called before any conditional returns
+  useEffect(() => {
+    if (!isClient) return;
+    
+    const timer = setInterval(() => {
+      updateAllTimes();
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [isClient, updateAllTimes]);
 
   // Verify authentication on component mount - ONLY ONCE
   useEffect(() => {
@@ -83,59 +136,6 @@ export const Homeview = () => {
   if (!user) {
     return null;
   }
-
-  // Handle hydration
-  useEffect(() => {
-    setIsClient(true);
-    updateAllTimes();
-  }, []);
-
-  const updateAllTimes = () => {
-    const now = new Date();
-    
-    // Local time
-    setCurrentTime(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
-    setCurrentDate(now.toLocaleDateString([], { 
-      weekday: 'long', 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
-    }));
-
-    // US Time zones from Hawaii to New York
-    const usTimeZones = [
-      { name: 'Hawaii', zone: 'Pacific/Honolulu', abbr: 'HST' },
-      { name: 'Alaska', zone: 'America/Anchorage', abbr: 'AKST' },
-      { name: 'Pacific', zone: 'America/Los_Angeles', abbr: 'PST' },
-      { name: 'Mountain', zone: 'America/Denver', abbr: 'MST' },
-      { name: 'Central', zone: 'America/Chicago', abbr: 'CST' },
-      { name: 'Eastern', zone: 'America/New_York', abbr: 'EST' }
-    ];
-
-    const timeZoneData = usTimeZones.map(tz => ({
-      name: tz.name,
-      time: now.toLocaleTimeString('en-US', { 
-        timeZone: tz.zone, 
-        hour: '2-digit', 
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: true
-      }),
-      zone: tz.abbr
-    }));
-
-    setTimeZones(timeZoneData);
-  };
-
-  // Update time every second (only on client)
-  useEffect(() => {
-    if (!isClient) return;
-    
-    const timer = setInterval(() => {
-      updateAllTimes();
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [isClient]);
 
   // Get time-based background theme
   const getTimeBasedTheme = () => {

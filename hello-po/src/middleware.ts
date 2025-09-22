@@ -12,8 +12,18 @@ export function middleware(request: NextRequest) {
     // Get the origin from the request
     const origin = request.headers.get('origin');
     
-    // Allow requests from same origin or vercel domains
-    if (origin && (origin.includes('.vercel.app') || origin === request.nextUrl.origin)) {
+    // Allow requests from same origin, localhost, ngrok, or vercel domains
+    const allowedOrigins = [
+      'http://localhost:3000',
+      'https://localhost:3000',
+      'https://apparent-evenly-walrus.ngrok-free.app',
+    ];
+    
+    if (origin && (
+      origin === request.nextUrl.origin || 
+      allowedOrigins.includes(origin) ||
+      origin.includes('.vercel.app')
+    )) {
       response.headers.set('Access-Control-Allow-Origin', origin);
       response.headers.set('Access-Control-Allow-Credentials', 'true');
       response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
@@ -31,6 +41,12 @@ export function middleware(request: NextRequest) {
     response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
     response.headers.set('Pragma', 'no-cache');
     response.headers.set('Expires', '0');
+    
+    // Ensure proper cookie handling for localhost
+    const host = request.headers.get('host');
+    if (host?.includes('localhost')) {
+      response.headers.set('Set-Cookie', response.headers.get('Set-Cookie') || '');
+    }
   }
 
   return response;
