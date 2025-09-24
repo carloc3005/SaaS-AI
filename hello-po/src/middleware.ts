@@ -16,7 +16,8 @@ export function middleware(request: NextRequest) {
     const allowedOrigins = [
       'http://localhost:3000',
       'https://localhost:3000',
-      'https://apparent-evenly-walrus.ngrok-free.app',
+      ...(process.env.BETTER_AUTH_URL ? [process.env.BETTER_AUTH_URL] : []),
+      ...(process.env.VERCEL_URL ? [`https://${process.env.VERCEL_URL}`] : []),
     ];
     
     if (origin && (

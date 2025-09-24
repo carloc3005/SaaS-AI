@@ -30,7 +30,7 @@ export const AgentIdView = ({ agentId }: Props) => {
     const removeAgent = useMutation(
         trpc.agents.remove.mutationOptions({
             onMutate: async () => {
-                console.log('🗑️ Starting agent deletion for ID:', agentId);
+                console.log('Starting agent deletion for ID:', agentId);
                 
                 // Cancel any outgoing refetches
                 await queryClient.cancelQueries({ 
@@ -45,12 +45,12 @@ export const AgentIdView = ({ agentId }: Props) => {
                     queryKey: [['agents', 'getMany']]
                 });
 
-                console.log('🗑️ Found queries to update:', queries.length);
+                console.log('Found queries to update:', queries.length);
 
                 queries.forEach((query) => {
                     const data = query.state.data;
                     if (data) {
-                        console.log('🗑️ Updating query:', query.queryKey, 'Current items:', (data as any).items?.length);
+                        console.log('Updating query:', query.queryKey, 'Current items:', (data as any).items?.length);
                         previousQueriesData.push([[...query.queryKey], data]);
                         
                         // Optimistically remove the agent from this query
@@ -58,7 +58,7 @@ export const AgentIdView = ({ agentId }: Props) => {
                             if (!old) return old;
                             
                             const filteredItems = old.items.filter((agent: any) => agent.id !== agentId);
-                            console.log('🗑️ Filtered items count:', filteredItems.length, 'vs original:', old.items.length);
+                            console.log('Filtered items count:', filteredItems.length, 'vs original:', old.items.length);
                             
                             return {
                                 ...old,
@@ -71,13 +71,13 @@ export const AgentIdView = ({ agentId }: Props) => {
                 });
 
                 // Navigate immediately
-                console.log('🗑️ Navigating to /agents');
+                console.log('Navigating to /agents');
                 router.push("/agents");
 
                 return { previousQueriesData };
             },
             onError: (err, variables, context) => {
-                console.log('🗑️ Delete failed:', err.message);
+                console.log('Delete failed:', err.message);
                 // Roll back on error
                 context?.previousQueriesData.forEach(([queryKey, data]) => {
                     queryClient.setQueryData(queryKey, data);
@@ -85,7 +85,7 @@ export const AgentIdView = ({ agentId }: Props) => {
                 toast.error(err.message);
             },
             onSuccess: async () => {
-                console.log('🗑️ Agent deleted successfully from server');
+                console.log('Agent deleted successfully from server');
                 // Invalidate all agent queries to get the real data
                 queryClient.invalidateQueries({
                     queryKey: [['agents', 'getMany']]
@@ -108,14 +108,14 @@ export const AgentIdView = ({ agentId }: Props) => {
     )
 
     const handleRemoveAgent = async () => {
-        console.log('🗑️ Delete button clicked for agent:', agentId);
+        console.log('Delete button clicked for agent:', agentId);
         const ok = await confirmRemove();
-        console.log('🗑️ User confirmation result:', ok);
+        console.log('User confirmation result:', ok);
         if (ok) {
-            console.log('🗑️ Proceeding with deletion');
+            console.log('Proceeding with deletion');
             await removeAgent.mutateAsync({ id: agentId });
         } else {
-            console.log('🗑️ User cancelled deletion');
+            console.log('User cancelled deletion');
         }
     }
 
