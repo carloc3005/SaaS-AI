@@ -48,11 +48,10 @@ export const auth = betterAuth({
         requireEmailVerification: false, // Disable email verification for now
     },
     session: {
-        expiresIn: 60 * 60 * 24 * 7, // 7 days
-        updateAge: 60 * 60 * 24, // 1 day
+        expiresIn: 60 * 60 * 2, // 2 hours instead of 7 days - much shorter session
+        updateAge: 60 * 30, // Update every 30 minutes instead of 1 day
         cookieCache: {
-            enabled: true,
-            maxAge: 60 * 5, // 5 minutes
+            enabled: false, // Disable cookie cache for better security
         },
     },
     // Removed social providers - using email/password only
@@ -67,7 +66,8 @@ export const auth = betterAuth({
                     secure: process.env.NODE_ENV === 'production',
                     sameSite: 'lax',
                     path: '/',
-                    maxAge: 60 * 60 * 24 * 7, // 7 days
+                    // Remove maxAge to make it a session cookie (expires when browser closes)
+                    maxAge: undefined,
                     domain: undefined, // Let the browser set this automatically
                 }
             }

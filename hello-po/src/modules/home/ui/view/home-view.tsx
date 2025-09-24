@@ -24,6 +24,7 @@ import {
 import Link from "next/link";
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
+import { SessionSecurity } from "@/components/session-security";
 
 export const Homeview = () => {
   const [currentTime, setCurrentTime] = useState<string>("");
@@ -154,10 +155,47 @@ export const Homeview = () => {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      console.log('User manually logging out');
+      await authClient.signOut();
+      
+      // Clear any local storage or session storage
+      localStorage.clear();
+      sessionStorage.clear();
+      
+      // Redirect to sign-in
+      router.push('/sign-in');
+      router.refresh();
+    } catch (error) {
+      console.error('Error during logout:', error);
+      // Force redirect anyway
+      window.location.href = '/sign-in';
+    }
+  };
+
   const timeTheme = getTimeBasedTheme();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-gray-100 relative">
+      {/* Session Security Component - handles auto-logout */}
+      <SessionSecurity />
+      
+      {/* Top Navigation Bar */}
+      <div className="relative z-20 p-6">
+        <div className="max-w-7xl mx-auto flex justify-between items-center">
+          <div className="text-lg font-semibold text-slate-800">Hello Po</div>
+          <Button 
+            onClick={handleLogout}
+            variant="outline" 
+            className="border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300"
+          >
+            <LockIcon className="h-4 w-4 mr-2" />
+            Logout
+          </Button>
+        </div>
+      </div>
+      
       {/* Animated background elements */}
       <div className="fixed inset-0 bg-gradient-to-r from-blue-50/30 via-indigo-50/30 to-slate-50/30 -z-10"></div>
       <div className="fixed top-0 left-1/4 w-96 h-96 bg-blue-100/40 rounded-full blur-3xl animate-pulse -z-10"></div>
